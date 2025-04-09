@@ -18,8 +18,14 @@ import {
   createStudentController,
   getAllStudentsController,
   updateStudentController,
-  // deleteStudentController,
+  deleteStudentController,
 } from "controller/studentController";
+import {
+  createMonHocController,
+  getAllMonHocController,
+  updateMonHocController,
+  deleteMonHocController,
+} from "controller/monhocController";
 
 const router = express.Router();
 
@@ -46,4 +52,11 @@ router.delete("/deleteclass/:malop", deleteClassController);
 router.post("/createstudent", createStudentController);
 router.get("/allstudents", getAllStudentsController);
 router.put("/updatestudent", updateStudentController);
+router.delete("/deletestudent/:mssv", deleteStudentController);
+
+//api mon hoc
+router.post("/createmonhoc", createMonHocController);
+router.get("/allmonhoc", getAllMonHocController);
+router.put("/updatemonhoc", updateMonHocController);
+router.delete("/deletemonhoc/:mamh", deleteMonHocController);
 export default router;

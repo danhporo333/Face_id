@@ -55,7 +55,7 @@ model MonHoc {
   mamh   String  @id @default(uuid())
   tenmh  String
   tclt   Int
-  lcth   Int
+  tcth   Int
   tkb    TKB[]
 }
 

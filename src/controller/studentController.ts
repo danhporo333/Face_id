@@ -3,6 +3,7 @@ import {
   createStudent,
   getAllStudents,
   updateStudent,
+  deleteStudent,
 } from "services/studentService";
 import { uploadSingleFile } from "services/fileService";
 const VN_PHONE_PREFIXES = [
@@ -201,6 +202,37 @@ export const updateStudentController = async (req: Request, res: Response) => {
       res.status(404).json({
         errorCode: 1,
         message: "Lớp không tồn tại trong hệ thống",
+      });
+    }
+    res.status(500).json({
+      message: "Internal server error",
+    });
+  }
+};
+
+export const deleteStudentController = async (req: Request, res: Response) => {
+  try {
+    const { mssv } = req.params;
+
+    if (!mssv) {
+      res.status(400).json({
+        errorCode: 1,
+        message: "Vui lòng cung cấp mã số sinh viên",
+      });
+    }
+
+    //xóa sinh viên
+    const deletedStudent = await deleteStudent(mssv);
+    res.status(200).json({
+      message: "Xóa sinh viên thành công",
+      data: deletedStudent,
+    });
+  } catch (error: any) {
+    console.error("Error deleting student:", error);
+    if (error.message === "Sinh viên không tồn tại") {
+      res.status(404).json({
+        errorCode: 1,
+        message: "Sinh viên không tồn tại trong hệ thống",
       });
     }
     res.status(500).json({

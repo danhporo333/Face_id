@@ -107,3 +107,28 @@ export const updateStudent = async (
 
   return updatedStudent;
 };
+
+export const deleteStudent = async (mssv: string) => {
+  // kiểm tra xem sinh viên có tồn tại không
+  const existingStudent = await prisma.sV.findUnique({
+    where: { mssv },
+  });
+
+  if (!existingStudent) {
+    throw new Error("Sinh viên không tồn tại");
+  }
+
+  // xóa sinh viên
+  const deletedStudent = await prisma.sV.delete({
+    where: { mssv },
+    include: {
+      lop: {
+        include: {
+          khoaVien: true,
+        },
+      },
+    },
+  });
+
+  return deletedStudent;
+};

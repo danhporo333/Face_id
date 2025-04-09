@@ -1,0 +1,127 @@
+import {
+  createMonHoc,
+  getAllMonHoc,
+  updateMonHoc,
+  deleteMonHoc,
+} from "services/monhocService";
+import { Request, Response } from "express";
+
+export const createMonHocController = async (req: Request, res: Response) => {
+  try {
+    const { tenmh, tclt, tcth } = req.body;
+    if (!tenmh || !tclt || !tcth) {
+      res.status(400).json({
+        errorCode: 1,
+        message: "vui lòng điền đầy đủ thôn tin",
+      });
+    }
+
+    if (tclt < 0 || tcth < 0) {
+      res.status(400).json({
+        errorCode: 1,
+        message: "số tín chỉ không hợp lệ",
+      });
+    }
+
+    const monhoc = await createMonHoc({
+      tenmh,
+      tclt: parseInt(tclt),
+      tcth: parseInt(tcth),
+    });
+
+    res.status(200).json({
+      message: "Tạo môn học thành công",
+      data: monhoc,
+    });
+  } catch (error: any) {
+    if (error.message === "Môn học đã tồn tại") {
+      res.status(400).json({
+        errorCode: 1,
+        message: "Môn học đã tồn tại trong hệ thống",
+      });
+    }
+    res.status(500).json({ message: "Internal server error" });
+  }
+};
+
+export const getAllMonHocController = async (req: Request, res: Response) => {
+  try {
+    const monhoc = await getAllMonHoc();
+    const monhocCount = monhoc.length;
+
+    res.status(200).json({
+      message: "Lấy danh sách môn học thành công",
+      data: {
+        monhocCount,
+        monhoc,
+      },
+    });
+  } catch (error) {
+    res.status(500).json({ message: "Internal server error" });
+  }
+};
+
+export const updateMonHocController = async (req: Request, res: Response) => {
+  try {
+    const { mamh, tenmh, tclt, tcth } = req.body;
+    if (!mamh) {
+      res.status(400).json({
+        errorCode: 1,
+        message: "Vui lòng cung cấp mã môn học",
+      });
+    }
+
+    if (tclt < 0 || tcth < 0) {
+      res.status(400).json({
+        errorCode: 1,
+        message: "số tín chỉ không hợp lệ",
+      });
+    }
+
+    const updatedSubject = await updateMonHoc(mamh, {
+      tenmh,
+      tclt: tclt ? parseInt(tclt) : tclt,
+      tcth: tcth ? parseInt(tcth) : tcth,
+    });
+
+    res.status(200).json({
+      message: "Cập nhật môn học thành công",
+      data: updatedSubject,
+    });
+  } catch (error: any) {
+    if (error.message === "Môn học không tồn tại") {
+      res.status(404).json({
+        errorCode: 1,
+        message: "Môn học không tồn tại trong hệ thống",
+      });
+    }
+    res.status(500).json({ message: "Internal server error" });
+  }
+};
+
+export const deleteMonHocController = async (req: Request, res: Response) => {
+  try {
+    const { mamh } = req.params;
+    if (!mamh) {
+      res.status(400).json({
+        errorCode: 1,
+        message: "Vui lòng cung cấp mã môn học",
+      });
+    }
+
+    const deletedSubject = await deleteMonHoc(mamh);
+
+    res.status(200).json({
+      message: "Xóa môn học thành công",
+      data: deletedSubject,
+    });
+  } catch (error: any) {
+    if (error.message === "Môn học không tồn tại") {
+      res.status(404).json({
+        errorCode: 1,
+        message: "Môn học không tồn tại trong hệ thống",
+      });
+    }
+    res.status(500).json({ message: "Internal server error" });
+  }
+};
