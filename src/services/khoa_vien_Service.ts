@@ -44,14 +44,42 @@ export const getAllKhoaVien = async () => {
 };
 
 export const updateKhoaVien = async (makv: string, khoavien: IKhoaVien) => {
+  // Kiểm tra xem khoa viện có tồn tại không
+  const existingKhoaVien = await prisma.khoaVien.findUnique({
+    where: { makv },
+  });
+
+  if (!existingKhoaVien) {
+    throw new Error("Khoa viện không tồn tại");
+  }
+
+  // Kiểm tra xem tên mới có bị trùng với khoa viện khác không
+  if (khoavien.tenkv !== existingKhoaVien.tenkv) {
+    const duplicateKhoaVien = await prisma.khoaVien.findFirst({
+      where: {
+        tenkv: khoavien.tenkv,
+        makv: { not: makv },
+      },
+    });
+
+    if (duplicateKhoaVien) {
+      throw new Error("Tên khoa viện đã tồn tại");
+    }
+  }
+
+  // Cập nhật thông tin khoa viện
   const updatedKhoaVien = await prisma.khoaVien.update({
-    where: { makv: makv },
+    where: { makv },
     data: {
       tenkv: khoavien.tenkv,
       dtkv: khoavien.dtkv,
       diaChi: khoavien.diaChi,
     },
+    include: {
+      lop: true, // Bao gồm thông tin các lớp thuộc khoa viện
+    },
   });
+
   return updatedKhoaVien;
 };
 

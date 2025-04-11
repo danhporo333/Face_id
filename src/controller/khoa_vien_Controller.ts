@@ -109,11 +109,13 @@ export const getAllKhoaVienController = async (req: Request, res: Response) => {
 
 export const updateKhoaVienController = async (req: Request, res: Response) => {
   try {
+    // Lấy makv từ params thay vì body
     const { makv, tenkv, dtkv, diaChi } = req.body;
+
     if (!makv) {
       res.status(400).json({
         errorCode: 1,
-        message: "không tìm thấy mã khoa viện",
+        message: "Không tìm thấy mã khoa viện",
       });
     }
 
@@ -123,12 +125,25 @@ export const updateKhoaVienController = async (req: Request, res: Response) => {
       diaChi,
     });
     res.status(200).json({
-      message: "Khoa viện updated successfully",
+      errorCode: 0,
+      message: "Cập nhật khoa viện thành công",
       data: updatedKhoaVien,
     });
-  } catch (error) {
+  } catch (error: any) {
     console.error(error);
-    res.status(500).json({ message: "Internal server error" });
+    if (
+      error.message === "Khoa viện không tồn tại" ||
+      error.message === "Tên khoa viện đã tồn tại"
+    ) {
+      res.status(400).json({
+        errorCode: 1,
+        message: error.message,
+      });
+    }
+    res.status(500).json({
+      errorCode: 1,
+      message: "Lỗi hệ thống",
+    });
   }
 };
 

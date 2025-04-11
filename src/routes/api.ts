@@ -26,7 +26,25 @@ import {
   updateMonHocController,
   deleteMonHocController,
 } from "controller/monhocController";
+import {
+  createTeacherController,
+  getAllTeachersController,
+  updateTeacherController,
+  deleteTeacherController,
+} from "controller/teacherController";
+import {
+  createRoomController,
+  getAllRoomsController,
+  updateRoomController,
+  deleteRoomController,
+} from "controller/RoomController";
 
+import {
+  createTKBController,
+  getAllTKBController,
+  updateTKBController,
+  deleteTKBController,
+} from "controller/tkbController";
 const router = express.Router();
 
 // Define routes
@@ -59,4 +77,22 @@ router.post("/createmonhoc", createMonHocController);
 router.get("/allmonhoc", getAllMonHocController);
 router.put("/updatemonhoc", updateMonHocController);
 router.delete("/deletemonhoc/:mamh", deleteMonHocController);
+
+//api teacher
+router.post("/createteacher", createTeacherController);
+router.get("/allteachers", getAllTeachersController);
+router.put("/updateteacher", updateTeacherController);
+router.delete("/deleteteacher/:mgv", deleteTeacherController);
+
+//api room
+router.post("/createroom", createRoomController);
+router.get("/allrooms", getAllRoomsController);
+router.put("/updateroom", updateRoomController);
+router.delete("/deleteroom/:sop", deleteRoomController);
+
+//api tkb
+router.post("/createtkb", createTKBController);
+router.get("/alltkb", getAllTKBController);
+router.put("/updatetkb", updateTKBController);
+router.delete("/deletetkb/:id", deleteTKBController);
 export default router;

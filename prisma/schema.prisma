@@ -73,6 +73,7 @@ model GV {
 // Bảng Phòng học
 model Phong {
   sop     String  @id @default(uuid())
+  tenPhong String
   sucChua Int
   coSo    String
   tkb     TKB[]
