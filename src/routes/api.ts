@@ -1,6 +1,12 @@
-import express from "express";
+import express, { Router } from "express";
 import { auth } from "src/Middleware//auth";
-import { register, login } from "controller/userController";
+
+import {
+  register,
+  login,
+  getAllUsersController,
+  deleteUserController,
+} from "controller/userController";
 import { uploadFile } from "controller/fileController";
 import {
   createKhoaVienController,
@@ -45,11 +51,14 @@ import {
   updateTKBController,
   deleteTKBController,
 } from "controller/tkbController";
-const router = express.Router();
 
-// Define routes
+const router: Router = express.Router();
+
+//api user
 router.post("/register", register);
 router.post("/login", login);
+router.get("/allusers", getAllUsersController);
+router.delete("/deleteuser/:id", deleteUserController);
 
 //api upload file
 router.post("/upload", uploadFile);

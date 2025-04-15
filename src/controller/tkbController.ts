@@ -6,6 +6,13 @@ import {
   deleteTKB,
 } from "services/tkbService";
 
+const formatDate = (date: Date): string => {
+  const day = date.getDate().toString().padStart(2, "0");
+  const month = (date.getMonth() + 1).toString().padStart(2, "0");
+  const year = date.getFullYear();
+  return `${day}/${month}/${year}`;
+};
+
 export const createTKBController = async (req: Request, res: Response) => {
   try {
     const { thu, ngay, tietBD, tietKT, mamh, mgv, sop } = req.body;
@@ -16,15 +23,35 @@ export const createTKBController = async (req: Request, res: Response) => {
         errorCode: 1,
         message: "Vui lòng điền đầy đủ thông tin",
       });
+      return;
     }
 
-    // Validate ngày tháng năm
-    const inputDate = new Date(ngay);
-    if (isNaN(inputDate.getTime())) {
+    // Validate và chuyển đổi ngày tháng
+    let inputDate: Date;
+    try {
+      // Hỗ trợ cả 2 format DD/MM/YYYY và YYYY-MM-DD
+      const dateParts = ngay.includes("/") ? ngay.split("/") : null;
+      if (dateParts) {
+        const [day, month, year] = dateParts;
+        inputDate = new Date(`${year}-${month}-${day}`);
+      } else {
+        inputDate = new Date(ngay);
+      }
+
+      if (isNaN(inputDate.getTime())) {
+        res.status(400).json({
+          errorCode: 1,
+          message: "Ngày tháng năm không hợp lệ",
+        });
+        return;
+      }
+    } catch (error) {
       res.status(400).json({
         errorCode: 1,
-        message: "Ngày tháng năm không hợp lệ",
+        message:
+          "Định dạng ngày tháng không hợp lệ (DD/MM/YYYY hoặc YYYY-MM-DD)",
       });
+      return;
     }
 
     // Kiểm tra ngày không được là ngày trong quá khứ
@@ -35,6 +62,7 @@ export const createTKBController = async (req: Request, res: Response) => {
         errorCode: 1,
         message: "Không thể tạo lịch học cho ngày trong quá khứ",
       });
+      return;
     }
 
     // Validate tiết học
@@ -49,6 +77,7 @@ export const createTKBController = async (req: Request, res: Response) => {
         errorCode: 1,
         message: "Tiết học không hợp lệ",
       });
+      return;
     }
 
     // Validate thứ
@@ -67,6 +96,7 @@ export const createTKBController = async (req: Request, res: Response) => {
         errorCode: 1,
         message: "Thứ không hợp lệ",
       });
+      return;
     }
 
     // Validate thứ và kiểm tra khớp với ngày
@@ -85,6 +115,7 @@ export const createTKBController = async (req: Request, res: Response) => {
         errorCode: 1,
         message: "Thứ không khớp với ngày tháng năm đã chọn",
       });
+      return;
     }
 
     // Format lại ngày tháng để lưu vào database
@@ -93,7 +124,7 @@ export const createTKBController = async (req: Request, res: Response) => {
 
     const newTKB = await createTKB({
       thu,
-      ngay: formattedDate,
+      ngay: inputDate,
       tietBD: parseInt(tietBD),
       tietKT: parseInt(tietKT),
       mamh,
@@ -101,11 +132,18 @@ export const createTKBController = async (req: Request, res: Response) => {
       sop,
     });
 
+    // Format ngày trong response về dạng DD/MM/YYYY
+    const responseData = {
+      ...newTKB,
+      ngay: formatDate(new Date(newTKB.ngay)),
+    };
+
     res.status(201).json({
       errorCode: 0,
       message: "Tạo thời khóa biểu thành công",
-      data: newTKB,
+      data: responseData,
     });
+    return;
   } catch (error: any) {
     if (
       error.message === "Môn học không tồn tại" ||
@@ -117,25 +155,30 @@ export const createTKBController = async (req: Request, res: Response) => {
         errorCode: 1,
         message: error.message,
       });
+      return;
     }
     res.status(500).json({
       errorCode: 1,
       message: "Internal server error",
     });
+    return;
   }
 };
 
 export const getAllTKBController = async (req: Request, res: Response) => {
   try {
     const tkbs = await getAllTKB();
-    const tkbCount = tkbs.length;
+    const formattedTkbs = tkbs.map((tkb) => ({
+      ...tkb,
+      ngay: formatDate(new Date(tkb.ngay)),
+    }));
 
     res.status(200).json({
       errorCode: 0,
       message: "Lấy danh sách thời khóa biểu thành công",
       data: {
-        tkbCount,
-        tkbs,
+        tkbCount: tkbs.length,
+        tkbs: formattedTkbs,
       },
     });
   } catch (error) {
@@ -155,46 +198,39 @@ export const updateTKBController = async (req: Request, res: Response) => {
         errorCode: 1,
         message: "Vui lòng cung cấp ID thời khóa biểu",
       });
+      return;
     }
 
-    // Validate tiết học nếu được cung cấp
-    if (tietBD || tietKT) {
-      if (
-        tietBD < 1 ||
-        tietBD > 12 ||
-        tietKT < 1 ||
-        tietKT > 12 ||
-        tietBD > tietKT
-      ) {
+    let inputDate: Date | undefined;
+    if (ngay) {
+      try {
+        const dateParts = ngay.includes("/") ? ngay.split("/") : null;
+        if (dateParts) {
+          const [day, month, year] = dateParts;
+          inputDate = new Date(`${year}-${month}-${day}`);
+        } else {
+          inputDate = new Date(ngay);
+        }
+
+        if (isNaN(inputDate.getTime())) {
+          res.status(400).json({
+            errorCode: 1,
+            message: "Ngày tháng năm không hợp lệ",
+          });
+          return;
+        }
+      } catch (error) {
         res.status(400).json({
           errorCode: 1,
-          message: "Tiết học không hợp lệ",
+          message: "Định dạng ngày tháng không hợp lệ",
         });
+        return;
       }
-    }
-
-    // Validate thứ nếu được cung cấp
-    if (
-      thu &&
-      ![
-        "Thứ 2",
-        "Thứ 3",
-        "Thứ 4",
-        "Thứ 5",
-        "Thứ 6",
-        "Thứ 7",
-        "Chủ nhật",
-      ].includes(thu)
-    ) {
-      res.status(400).json({
-        errorCode: 1,
-        message: "Thứ không hợp lệ",
-      });
     }
 
     const updatedTKB = await updateTKB(id, {
       thu,
-      ngay: ngay ? new Date(ngay) : undefined,
+      ngay: inputDate,
       tietBD: tietBD ? parseInt(tietBD) : undefined,
       tietKT: tietKT ? parseInt(tietKT) : undefined,
       mamh,
@@ -202,27 +238,36 @@ export const updateTKBController = async (req: Request, res: Response) => {
       sop,
     });
 
+    // Format ngày trong response về dạng DD/MM/YYYY
+    const responseData = {
+      ...updatedTKB,
+      ngay: formatDate(new Date(updatedTKB.ngay)),
+    };
+
     res.status(200).json({
       errorCode: 0,
       message: "Cập nhật thời khóa biểu thành công",
-      data: updatedTKB,
+      data: responseData,
     });
   } catch (error: any) {
     if (
       error.message === "Thời khóa biểu không tồn tại" ||
       error.message === "Môn học không tồn tại" ||
       error.message === "Giảng viên không tồn tại" ||
-      error.message === "Phòng học không tồn tại"
+      error.message === "Phòng học không tồn tại" ||
+      error.message === "Thời gian này đã có lịch học"
     ) {
       res.status(400).json({
         errorCode: 1,
         message: error.message,
       });
+      return;
     }
     res.status(500).json({
       errorCode: 1,
-      message: "Internal server error",
+      message: "Lỗi hệ thống",
     });
+    return;
   }
 };
 
@@ -244,16 +289,19 @@ export const deleteTKBController = async (req: Request, res: Response) => {
       message: "Xóa thời khóa biểu thành công",
       data: deletedTKB,
     });
+    return;
   } catch (error: any) {
     if (error.message === "Thời khóa biểu không tồn tại") {
       res.status(404).json({
         errorCode: 1,
         message: error.message,
       });
+      return;
     }
     res.status(500).json({
       errorCode: 1,
       message: "Internal server error",
     });
+    return;
   }
 };

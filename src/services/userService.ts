@@ -68,6 +68,32 @@ export const createUser = async (user: IUser) => {
   return newUser;
 };
 
+export const getAllUsers = async () => {
+  const users = await prisma.user.findMany({
+    include: {
+      sinhVien: true,
+      giangVien: true,
+    },
+  });
+  return users;
+};
+
+export const deleteUser = async (id: string) => {
+  const user = await prisma.user.findUnique({
+    where: { id },
+  });
+
+  if (!user) {
+    throw new Error("Người dùng không tồn tại");
+  }
+
+  const deleteuser = await prisma.user.delete({
+    where: { id },
+  });
+
+  return deleteuser;
+};
+
 export const loginUser = async (username: string, password: string) => {
   const user = await prisma.user.findFirst({
     where: { username },
