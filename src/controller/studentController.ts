@@ -51,6 +51,13 @@ const generateVNPhoneNumber = (): string => {
   return prefix + remainingDigits;
 };
 
+const formatDate = (date: Date): string => {
+  const day = date.getDate().toString().padStart(2, "0");
+  const month = (date.getMonth() + 1).toString().padStart(2, "0");
+  const year = date.getFullYear();
+  return `${day}/${month}/${year}`;
+};
+
 export const createStudentController = async (req: Request, res: Response) => {
   try {
     const { malop, holot, ten, ntns, phai, dt_sv, emailSV, image } = req.body;
@@ -60,13 +67,33 @@ export const createStudentController = async (req: Request, res: Response) => {
         message: "Vui lòng điền đầy đủ thông tin",
       });
     }
-    const birthDate = new Date(ntns);
-    if (isNaN(birthDate.getTime())) {
+    let inputDate: Date;
+    try {
+      // Hỗ trợ cả 2 format DD/MM/YYYY và YYYY-MM-DD
+      const dateParts = ntns.includes("/") ? ntns.split("/") : null;
+      if (dateParts) {
+        const [day, month, year] = dateParts;
+        inputDate = new Date(`${year}-${month}-${day}`);
+      } else {
+        inputDate = new Date(ntns);
+      }
+
+      if (isNaN(inputDate.getTime())) {
+        res.status(400).json({
+          errorCode: 1,
+          message: "Ngày tháng năm không hợp lệ",
+        });
+        return;
+      }
+    } catch (error) {
       res.status(400).json({
         errorCode: 1,
-        message: "Ngày tháng năm sinh không hợp lệ",
+        message:
+          "Định dạng ngày tháng không hợp lệ (DD/MM/YYYY hoặc YYYY-MM-DD)",
       });
+      return;
     }
+
     // Validate gender
     if (!["Nam", "Nữ"].includes(phai)) {
       res.status(400).json({
@@ -95,7 +122,7 @@ export const createStudentController = async (req: Request, res: Response) => {
       malop,
       holot,
       ten,
-      ntns: birthDate,
+      ntns: inputDate,
       phai,
       dt_sv: phoneNumber,
       emailSV,
@@ -104,7 +131,10 @@ export const createStudentController = async (req: Request, res: Response) => {
     const newStudent = await createStudent(svData);
     res.status(201).json({
       message: "Tạo sinh viên thành công",
-      data: newStudent,
+      data: {
+        ...newStudent,
+        ntns: formatDate(new Date(newStudent.ntns)),
+      },
     });
   } catch (error: any) {
     if (error.message === "Lớp không tồn tại") {
@@ -122,12 +152,16 @@ export const createStudentController = async (req: Request, res: Response) => {
 export const getAllStudentsController = async (req: Request, res: Response) => {
   try {
     const students = await getAllStudents();
-    const studentCount = students.length;
+    const formattedStudents = students.map((student) => ({
+      ...student,
+      ntns: formatDate(new Date(student.ntns)), // Chuyển sang DD/MM/YYYY
+    }));
+    const studentCount = formattedStudents.length;
     res.status(200).json({
       message: "Lấy danh sách sinh viên thành công",
       data: {
         studentCount,
-        students,
+        students: formattedStudents,
       },
     });
   } catch (error) {
@@ -148,7 +182,6 @@ export const updateStudentController = async (req: Request, res: Response) => {
       });
     }
 
-    // Validate date if provided
     let birthDate;
     if (ntns) {
       birthDate = new Date(ntns);
@@ -188,7 +221,10 @@ export const updateStudentController = async (req: Request, res: Response) => {
 
     res.status(200).json({
       message: "Cập nhật sinh viên thành công",
-      data: updatedStudent,
+      data: {
+        ...updatedStudent,
+        ntns: formatDate(new Date(updatedStudent.ntns)), // Chuyển sang DD/MM/YYYY
+      },
     });
   } catch (error: any) {
     console.error("Error updating student:", error);
