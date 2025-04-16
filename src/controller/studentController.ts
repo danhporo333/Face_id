@@ -182,13 +182,28 @@ export const updateStudentController = async (req: Request, res: Response) => {
       });
     }
 
-    let birthDate;
+    let birthDate: Date | null = null;
     if (ntns) {
-      birthDate = new Date(ntns);
-      if (isNaN(birthDate.getTime())) {
+      try {
+        const dateParts = ntns.includes("/") ? ntns.split("/") : null;
+        if (dateParts) {
+          const [day, month, year] = dateParts;
+          birthDate = new Date(`${year}-${month}-${day}`);
+        } else {
+          birthDate = new Date(ntns);
+        }
+
+        if (isNaN(birthDate.getTime())) {
+          res.status(400).json({
+            errorCode: 1,
+            message: "Ngày tháng năm sinh không hợp lệ",
+          });
+        }
+      } catch (error) {
         res.status(400).json({
           errorCode: 1,
-          message: "Ngày tháng năm sinh không hợp lệ",
+          message:
+            "Định dạng ngày tháng không hợp lệ (DD/MM/YYYY hoặc YYYY-MM-DD)",
         });
       }
     }
