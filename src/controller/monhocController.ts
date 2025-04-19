@@ -9,11 +9,18 @@ import { Request, Response } from "express";
 export const createMonHocController = async (req: Request, res: Response) => {
   try {
     const { tenmh, tclt, tcth } = req.body;
-    if (!tenmh || !tclt || !tcth) {
+    if (
+      !tenmh ||
+      tclt === undefined ||
+      tclt === null ||
+      tcth === undefined ||
+      tcth === null
+    ) {
       res.status(400).json({
         errorCode: 1,
         message: "vui lòng điền đầy đủ thôn tin",
       });
+      return;
     }
 
     if (tclt < 0 || tcth < 0) {
@@ -21,6 +28,7 @@ export const createMonHocController = async (req: Request, res: Response) => {
         errorCode: 1,
         message: "số tín chỉ không hợp lệ",
       });
+      return;
     }
 
     const monhoc = await createMonHoc({
@@ -33,6 +41,7 @@ export const createMonHocController = async (req: Request, res: Response) => {
       message: "Tạo môn học thành công",
       data: monhoc,
     });
+    return;
   } catch (error: any) {
     if (error.message === "Môn học đã tồn tại") {
       res.status(400).json({
