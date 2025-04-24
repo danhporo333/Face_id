@@ -34,9 +34,13 @@ export const register = async (req: Request, res: Response) => {
         giangvien: newUser.giangVien,
       },
     });
-  } catch (error) {
+  } catch (error: any) {
     console.error(error);
-    res.status(500).json({ message: "Internal server error" });
+
+    res.status(500).json({
+      errorCode: 1,
+      message: error.message || "Internal server error",
+    });
   }
 };
 

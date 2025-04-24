@@ -15,6 +15,12 @@ interface IUser {
 
 export const createUser = async (user: IUser) => {
   // Kiểm tra sinh viên/giảng viên tồn tại
+  if (user.mssv && user.mgv) {
+    throw new Error(
+      "Chỉ được tạo tài khoản sinh viên hoặc giảng viên, không thể cả hai"
+    );
+  }
+  // Kiểm tra sinh viên tồn tại
   if (user.mssv) {
     const sinhVien = await prisma.sV.findUnique({
       where: { mssv: user.mssv },
@@ -29,6 +35,7 @@ export const createUser = async (user: IUser) => {
     }
   }
 
+  // Kiểm tra giảng viên tồn tại
   if (user.mgv) {
     const giangVien = await prisma.gV.findUnique({
       where: { mgv: user.mgv },
