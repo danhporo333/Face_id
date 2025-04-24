@@ -3,12 +3,12 @@ import "dotenv/config";
 import path from "path";
 import cors from "cors";
 import apiRoutes from "./routes/api";
-import fileUpload from "express-fileupload";
+// import fileUpload from "express-fileupload";
 const app = express();
 const port = process.env.PORT || 8080;
 
 //config file upload
-app.use(fileUpload());
+// app.use(fileUpload());
 app.use("/image", express.static(path.join(__dirname, "Public/image")));
 
 //config req.body

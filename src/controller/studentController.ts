@@ -6,6 +6,7 @@ import {
   deleteStudent,
 } from "services/studentService";
 import { uploadSingleFile } from "services/fileService";
+import fileUploadMiddleware from "../Middleware/multer";
 const VN_PHONE_PREFIXES = [
   "086",
   "096",
@@ -59,94 +60,103 @@ const formatDate = (date: Date): string => {
 };
 
 export const createStudentController = async (req: Request, res: Response) => {
-  try {
-    const { malop, holot, ten, ntns, phai, dt_sv, emailSV, image } = req.body;
-    if (!malop || !holot || !ten || !ntns || !phai) {
-      res.status(400).json({
+  const upload = fileUploadMiddleware("image", "student");
+
+  upload(req, res, async (err: any) => {
+    if (err) {
+      return res.status(400).json({
         errorCode: 1,
-        message: "Vui lòng điền đầy đủ thông tin",
+        message: err.message,
       });
     }
-    let inputDate: Date;
+
     try {
-      // Hỗ trợ cả 2 format DD/MM/YYYY và YYYY-MM-DD
-      const dateParts = ntns.includes("/") ? ntns.split("/") : null;
-      if (dateParts) {
-        const [day, month, year] = dateParts;
-        inputDate = new Date(`${year}-${month}-${day}`);
-      } else {
-        inputDate = new Date(ntns);
-      }
-
-      if (isNaN(inputDate.getTime())) {
-        res.status(400).json({
+      const { malop, holot, ten, ntns, phai, dt_sv, emailSV, image } = req.body;
+      if (!malop || !holot || !ten || !ntns || !phai) {
+        return res.status(400).json({
           errorCode: 1,
-          message: "Ngày tháng năm không hợp lệ",
+          message: "Vui lòng điền đầy đủ thông tin",
         });
-        return;
       }
-    } catch (error) {
-      res.status(400).json({
-        errorCode: 1,
-        message:
-          "Định dạng ngày tháng không hợp lệ (DD/MM/YYYY hoặc YYYY-MM-DD)",
-      });
-      return;
-    }
 
-    // Validate gender
-    if (!["Nam", "Nữ"].includes(phai)) {
-      res.status(400).json({
-        errorCode: 1,
-        message: "Giới tính không hợp lệ (Nam/Nữ)",
+      let inputDate: Date;
+      try {
+        // Hỗ trợ cả 2 format DD/MM/YYYY và YYYY-MM-DD
+        const dateParts = ntns.includes("/") ? ntns.split("/") : null;
+        if (dateParts) {
+          const [day, month, year] = dateParts;
+          inputDate = new Date(`${year}-${month}-${day}`);
+        } else {
+          inputDate = new Date(ntns);
+        }
+
+        if (isNaN(inputDate.getTime())) {
+          return res.status(400).json({
+            errorCode: 1,
+            message: "Ngày tháng năm không hợp lệ",
+          });
+        }
+      } catch (error) {
+        return res.status(400).json({
+          errorCode: 1,
+          message:
+            "Định dạng ngày tháng không hợp lệ (DD/MM/YYYY hoặc YYYY-MM-DD)",
+        });
+      }
+
+      // Validate gender
+      if (!["Nam", "Nữ"].includes(phai)) {
+        return res.status(400).json({
+          errorCode: 1,
+          message: "Giới tính không hợp lệ (Nam/Nữ)",
+        });
+      }
+
+      const phoneNumber = dt_sv || generateVNPhoneNumber();
+
+      let faceIDUrl = image || null;
+      // 🛑 Kiểm tra nếu có file đính kèm
+      if (req.file) {
+        faceIDUrl = req.file.filename;
+      } else {
+        return res.status(400).json({
+          errorCode: 1,
+          message: "Image is required!",
+        });
+      }
+
+      const svData = {
+        malop,
+        holot,
+        ten,
+        ntns: inputDate,
+        phai,
+        dt_sv: phoneNumber,
+        emailSV,
+        faceID: faceIDUrl,
+      };
+
+      const newStudent = await createStudent(svData);
+
+      return res.status(201).json({
+        message: "Tạo sinh viên thành công",
+        data: {
+          ...newStudent,
+          ntns: formatDate(new Date(newStudent.ntns)),
+        },
+      });
+    } catch (error: any) {
+      if (error.message === "Lớp không tồn tại") {
+        return res.status(404).json({
+          errorCode: 1,
+          message: "Lớp không tồn tại trong hệ thống",
+        });
+      }
+      return res.status(500).json({
+        message: "Internal server error",
       });
     }
-
-    const phoneNumber = dt_sv || generateVNPhoneNumber();
-
-    let faceIDUrl = image || null;
-    // 🛑 Kiểm tra nếu có file đính kèm
-    if (req.files && req.files.image) {
-      let result = await uploadSingleFile(req.files.image);
-      faceIDUrl = result.name;
-    }
-    // Kiểm tra nếu không có file đính kèm
-    if (!faceIDUrl) {
-      res.status(400).json({
-        errorCode: 1,
-        message: "Image is required!",
-      });
-    }
-
-    const svData = {
-      malop,
-      holot,
-      ten,
-      ntns: inputDate,
-      phai,
-      dt_sv: phoneNumber,
-      emailSV,
-      faceID: faceIDUrl,
-    };
-    const newStudent = await createStudent(svData);
-    res.status(201).json({
-      message: "Tạo sinh viên thành công",
-      data: {
-        ...newStudent,
-        ntns: formatDate(new Date(newStudent.ntns)),
-      },
-    });
-  } catch (error: any) {
-    if (error.message === "Lớp không tồn tại") {
-      res.status(404).json({
-        errorCode: 1,
-        message: "Lớp không tồn tại trong hệ thống",
-      });
-    }
-    res.status(500).json({
-      message: "Internal server error",
-    });
-  }
+  });
 };
 
 export const getAllStudentsController = async (req: Request, res: Response) => {
@@ -172,93 +182,102 @@ export const getAllStudentsController = async (req: Request, res: Response) => {
 };
 
 export const updateStudentController = async (req: Request, res: Response) => {
-  try {
-    const { mssv, malop, holot, ten, ntns, phai, dt_sv, emailSV, image } =
-      req.body;
-    if (!mssv) {
-      res.status(400).json({
+  const upload = fileUploadMiddleware("image", "student");
+
+  upload(req, res, async (err: any) => {
+    if (err) {
+      return res.status(400).json({
         errorCode: 1,
-        message: "Vui lòng cung cấp mã số sinh viên",
+        message: err.message,
       });
     }
 
-    let birthDate: Date | null = null;
-    if (ntns) {
-      try {
-        const dateParts = ntns.includes("/") ? ntns.split("/") : null;
-        if (dateParts) {
-          const [day, month, year] = dateParts;
-          birthDate = new Date(`${year}-${month}-${day}`);
-        } else {
-          birthDate = new Date(ntns);
-        }
-
-        if (isNaN(birthDate.getTime())) {
-          res.status(400).json({
-            errorCode: 1,
-            message: "Ngày tháng năm sinh không hợp lệ",
-          });
-        }
-      } catch (error) {
-        res.status(400).json({
+    try {
+      const { mssv, malop, holot, ten, ntns, phai, dt_sv, emailSV, image } =
+        req.body;
+      if (!mssv) {
+        return res.status(400).json({
           errorCode: 1,
-          message:
-            "Định dạng ngày tháng không hợp lệ (DD/MM/YYYY hoặc YYYY-MM-DD)",
+          message: "Vui lòng cung cấp mã số sinh viên",
         });
       }
-    }
 
-    // Validate gender if provided
-    if (phai && !["Nam", "Nữ"].includes(phai)) {
-      res.status(400).json({
-        errorCode: 1,
-        message: "Giới tính không hợp lệ (Nam/Nữ)",
+      let birthDate: Date | null = null;
+      if (ntns) {
+        try {
+          const dateParts = ntns.includes("/") ? ntns.split("/") : null;
+          if (dateParts) {
+            const [day, month, year] = dateParts;
+            birthDate = new Date(`${year}-${month}-${day}`);
+          } else {
+            birthDate = new Date(ntns);
+          }
+
+          if (isNaN(birthDate.getTime())) {
+            return res.status(400).json({
+              errorCode: 1,
+              message: "Ngày tháng năm sinh không hợp lệ",
+            });
+          }
+        } catch (error) {
+          return res.status(400).json({
+            errorCode: 1,
+            message:
+              "Định dạng ngày tháng không hợp lệ (DD/MM/YYYY hoặc YYYY-MM-DD)",
+          });
+        }
+      }
+
+      // Validate gender if provided
+      if (phai && !["Nam", "Nữ"].includes(phai)) {
+        return res.status(400).json({
+          errorCode: 1,
+          message: "Giới tính không hợp lệ (Nam/Nữ)",
+        });
+      }
+
+      let faceIDUrl = undefined;
+      if (req.file) {
+        faceIDUrl = req.file.filename;
+      }
+
+      const updatedStudent = await updateStudent(mssv, {
+        malop,
+        holot,
+        ten,
+        ntns: birthDate,
+        phai,
+        dt_sv,
+        emailSV,
+        faceID: faceIDUrl,
+      });
+
+      return res.status(200).json({
+        message: "Cập nhật sinh viên thành công",
+        data: {
+          ...updatedStudent,
+          ntns: formatDate(new Date(updatedStudent.ntns)),
+        },
+      });
+    } catch (error: any) {
+      console.error("Error updating student:", error);
+      if (error.message === "Sinh viên không tồn tại") {
+        return res.status(404).json({
+          errorCode: 1,
+          message: "Sinh viên không tồn tại trong hệ thống",
+        });
+      }
+      if (error.message === "Lớp không tồn tại") {
+        return res.status(404).json({
+          errorCode: 1,
+          message: "Lớp không tồn tại trong hệ thống",
+        });
+      }
+      return res.status(500).json({
+        message: "Internal server error",
       });
     }
-
-    let faceIDUrl = image;
-    // Handle file upload if present
-    if (req.files && req.files.image) {
-      const result = await uploadSingleFile(req.files.image);
-      faceIDUrl = result.name;
-    }
-
-    const updatedStudent = await updateStudent(mssv, {
-      malop,
-      holot,
-      ten,
-      ntns: birthDate,
-      phai,
-      dt_sv,
-      emailSV,
-      faceID: faceIDUrl,
-    });
-
-    res.status(200).json({
-      message: "Cập nhật sinh viên thành công",
-      data: {
-        ...updatedStudent,
-        ntns: formatDate(new Date(updatedStudent.ntns)), // Chuyển sang DD/MM/YYYY
-      },
-    });
-  } catch (error: any) {
-    console.error("Error updating student:", error);
-    if (error.message === "Sinh viên không tồn tại") {
-      res.status(404).json({
-        errorCode: 1,
-        message: "Sinh viên không tồn tại trong hệ thống",
-      });
-    }
-    if (error.message === "Lớp không tồn tại") {
-      res.status(404).json({
-        errorCode: 1,
-        message: "Lớp không tồn tại trong hệ thống",
-      });
-    }
-    res.status(500).json({
-      message: "Internal server error",
-    });
-  }
+  });
 };
 
 export const deleteStudentController = async (req: Request, res: Response) => {
