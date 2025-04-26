@@ -1,5 +1,5 @@
 import express, { Router } from "express";
-import { auth } from "src/Middleware//auth";
+import { auth, checkRole } from "../Middleware//auth";
 
 import {
   register,
@@ -50,6 +50,10 @@ import {
   getAllTKBController,
   updateTKBController,
   deleteTKBController,
+  getTKBByStudentController,
+  ganSinhVienVaoTKBController,
+  ganLopVaoTKBController,
+  getLichHocCaNhanController,
 } from "controller/tkbController";
 
 const router: Router = express.Router();
@@ -104,4 +108,13 @@ router.post("/createtkb", createTKBController);
 router.get("/alltkb", getAllTKBController);
 router.put("/updatetkb", updateTKBController);
 router.delete("/deletetkb/:id", deleteTKBController);
+router.get("/tkb/student/:mssv", getTKBByStudentController);
+router.post("/tkb/gan-sinh-vien", ganSinhVienVaoTKBController);
+router.post("/tkb/gan-lop", ganLopVaoTKBController);
+router.get(
+  "/lich-hoc-ca-nhan",
+  auth,
+  checkRole(["STUDENT"]),
+  getLichHocCaNhanController
+);
 export default router;

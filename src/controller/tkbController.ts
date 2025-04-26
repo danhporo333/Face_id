@@ -4,6 +4,10 @@ import {
   getAllTKB,
   updateTKB,
   deleteTKB,
+  getTKBByStudentId,
+  ganSinhVienVaoTKB,
+  ganLopVaoTKB,
+  getTKBByUserId,
 } from "services/tkbService";
 
 const formatDate = (date: Date): string => {
@@ -303,5 +307,181 @@ export const deleteTKBController = async (req: Request, res: Response) => {
       message: "Internal server error",
     });
     return;
+  }
+};
+
+export const getTKBByStudentController = async (
+  req: Request,
+  res: Response
+) => {
+  try {
+    const { mssv } = req.params;
+
+    if (!mssv) {
+      res.status(400).json({
+        errorCode: 1,
+        message: "Vui lòng cung cấp mã số sinh viên",
+      });
+    }
+
+    const result = await getTKBByStudentId(mssv);
+
+    // Format ngày tháng để dễ đọc
+    const formattedTkbs = result.tkbs.map((tkb) => ({
+      ...tkb,
+      ngay: formatDate(new Date(tkb.ngay)),
+    }));
+
+    res.status(200).json({
+      errorCode: 0,
+      message: "Lấy thời khóa biểu sinh viên thành công",
+      data: {
+        student: result.student,
+        tkbs: formattedTkbs,
+      },
+    });
+  } catch (error: any) {
+    if (error.message === "Sinh viên không tồn tại") {
+      res.status(404).json({
+        errorCode: 1,
+        message: "Sinh viên không tồn tại trong hệ thống",
+      });
+    }
+
+    console.error("Lỗi khi lấy thời khóa biểu sinh viên:", error);
+    res.status(500).json({
+      errorCode: 1,
+      message: "Lỗi máy chủ nội bộ",
+    });
+  }
+};
+
+export const ganSinhVienVaoTKBController = async (
+  req: Request,
+  res: Response
+) => {
+  try {
+    const { mssv, tkbId } = req.body;
+
+    if (!mssv || !tkbId) {
+      res.status(400).json({
+        errorCode: 1,
+        message: "Vui lòng cung cấp mã số sinh viên và mã thời khóa biểu",
+      });
+    }
+
+    const ketQua = await ganSinhVienVaoTKB(mssv, tkbId);
+
+    res.status(200).json({
+      errorCode: 0,
+      message: "Gán sinh viên vào thời khóa biểu thành công",
+      data: ketQua,
+    });
+  } catch (error: any) {
+    if (
+      error.message === "Sinh viên không tồn tại" ||
+      error.message === "Thời khóa biểu không tồn tại" ||
+      error.message === "Sinh viên đã được gán vào thời khóa biểu này"
+    ) {
+      res.status(400).json({
+        errorCode: 1,
+        message: error.message,
+      });
+    }
+
+    console.error("Lỗi khi gán sinh viên vào TKB:", error);
+    res.status(500).json({
+      errorCode: 1,
+      message: "Lỗi máy chủ nội bộ",
+    });
+  }
+};
+
+export const ganLopVaoTKBController = async (req: Request, res: Response) => {
+  try {
+    const { malop, tkbId } = req.body;
+
+    if (!malop || !tkbId) {
+      res.status(400).json({
+        errorCode: 1,
+        message: "Vui lòng cung cấp mã lớp và mã thời khóa biểu",
+      });
+    }
+
+    const ketQua = await ganLopVaoTKB(malop, tkbId);
+
+    res.status(200).json({
+      errorCode: 0,
+      message: "Gán lớp vào thời khóa biểu thành công",
+      data: ketQua,
+    });
+  } catch (error: any) {
+    if (
+      error.message === "Lớp không tồn tại" ||
+      error.message === "Thời khóa biểu không tồn tại" ||
+      error.message === "Lớp không có sinh viên nào"
+    ) {
+      res.status(400).json({
+        errorCode: 1,
+        message: error.message,
+      });
+    }
+
+    console.error("Lỗi khi gán lớp vào TKB:", error);
+    res.status(500).json({
+      errorCode: 1,
+      message: "Lỗi máy chủ nội bộ",
+    });
+  }
+};
+
+export const getLichHocCaNhanController = async (
+  req: Request,
+  res: Response
+) => {
+  try {
+    // Lấy ID người dùng từ JWT token (đã được xác thực qua middleware auth)
+    const userId = req.user.id;
+
+    if (!userId) {
+      res.status(401).json({
+        errorCode: 1,
+        message: "Không có quyền truy cập",
+      });
+    }
+
+    const result = await getTKBByUserId(userId);
+
+    // Format ngày tháng để dễ đọc
+    const formattedTkbs = result.tkbs.map((tkb) => ({
+      ...tkb,
+      ngay: formatDate(new Date(tkb.ngay)),
+    }));
+
+    res.status(200).json({
+      errorCode: 0,
+      message: "Lấy thời khóa biểu cá nhân thành công",
+      data: {
+        sinhVien: result.student,
+        tkbs: formattedTkbs,
+      },
+    });
+  } catch (error: any) {
+    if (
+      error.message === "Không tìm thấy người dùng" ||
+      error.message === "Người dùng không phải là sinh viên" ||
+      error.message === "Sinh viên không tồn tại"
+    ) {
+      res.status(404).json({
+        errorCode: 1,
+        message: error.message,
+      });
+    }
+
+    console.error("Lỗi khi lấy thời khóa biểu sinh viên:", error);
+    res.status(500).json({
+      errorCode: 1,
+      message: "Lỗi máy chủ nội bộ",
+    });
   }
 };

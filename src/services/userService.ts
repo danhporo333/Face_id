@@ -119,9 +119,17 @@ export const loginUser = async (username: string, password: string) => {
     throw new Error("Mật khẩu không đúng");
   }
 
-  const token = jwt.sign({ id: user.id, role: user.role }, JWT_SECRET, {
-    expiresIn: "24h",
-  });
+  const token = jwt.sign(
+    {
+      id: user.id,
+      username: user.username,
+      role: user.role,
+    },
+    JWT_SECRET,
+    {
+      expiresIn: "24h",
+    }
+  );
 
   return { user, token };
 };

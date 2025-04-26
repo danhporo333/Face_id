@@ -30,7 +30,8 @@ export const auth = async (req: Request, res: Response, next: NextFunction) => {
 export const checkRole = (roles: string[]) => {
   return (req: Request, res: Response, next: NextFunction) => {
     if (!roles.includes(req.user.role)) {
-      return res.status(403).json({ message: "Không có quyền truy cập" });
+      res.status(403).json({ message: "Không có quyền truy cập" });
+      return;
     }
     next();
   };
