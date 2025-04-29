@@ -1,5 +1,6 @@
 import express, { Router } from "express";
 import { auth, checkRole } from "../Middleware//auth";
+import { fileUploadMiddleware } from "../Middleware/multer";
 
 import {
   register,
@@ -7,12 +8,14 @@ import {
   getAllUsersController,
   deleteUserController,
 } from "controller/userController";
+
 import { uploadFile } from "controller/fileController";
 import {
   createKhoaVienController,
   getAllKhoaVienController,
   updateKhoaVienController,
   deleteKhoaVienController,
+  importKhoaVienController,
 } from "controller/khoa_vien_Controller";
 import {
   createClassController,
@@ -56,6 +59,8 @@ import {
   getLichHocCaNhanController,
 } from "controller/tkbController";
 
+// import { importKhoaVienController } from "controller/importKhoaVienController";
+
 const router: Router = express.Router();
 
 //api user
@@ -72,6 +77,7 @@ router.post("/createkhoa_vien", createKhoaVienController);
 router.get("/all", getAllKhoaVienController);
 router.put("/updatekhoa_vien", updateKhoaVienController);
 router.delete("/deletekhoa_vien/:makv", deleteKhoaVienController);
+router.post("/import-khoa-vien", importKhoaVienController);
 
 //api class
 router.post("/createclass", createClassController);

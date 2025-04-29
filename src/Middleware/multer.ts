@@ -3,7 +3,10 @@ import path from "path";
 import { v4 } from "uuid";
 import fs from "fs";
 
-const fileUploadMiddleware = (fieldName: string, dir: string = "student") => {
+export const fileUploadMiddleware = (
+  fieldName: string,
+  dir: string = "student"
+) => {
   // Create absolute path to the upload directory
   const uploadPath = path.resolve(__dirname, "../Public/image", dir);
 
@@ -45,4 +48,36 @@ const fileUploadMiddleware = (fieldName: string, dir: string = "student") => {
   }).single(fieldName);
 };
 
-export default fileUploadMiddleware;
+export const excelUploadMiddleware = (fieldName: string) => {
+  const uploadExcel = path.resolve(__dirname, "../Public/excel/imports");
+  // Tạo thư mục nếu chưa tồn tại
+  if (!fs.existsSync(uploadExcel)) {
+    fs.mkdirSync(uploadExcel, { recursive: true });
+    console.log(`Created directory: ${uploadExcel}`);
+  }
+  return multer({
+    storage: multer.diskStorage({
+      destination: (req, file, cb) => {
+        cb(null, uploadExcel);
+      },
+      filename: (req, file, cb) => {
+        const timestamp = new Date().toISOString().replace(/[:.]/g, "-");
+        const filename = `import-${timestamp}${path.extname(
+          file.originalname
+        )}`;
+        cb(null, filename);
+      },
+    }),
+    fileFilter: (req, file, cb) => {
+      if (
+        file.mimetype ===
+          "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" ||
+        file.mimetype === "application/vnd.ms-excel"
+      ) {
+        cb(null, true);
+      } else {
+        cb(new Error("Chỉ chấp nhận file Excel (.xlsx, .xls)"));
+      }
+    },
+  }).single(fieldName);
+};

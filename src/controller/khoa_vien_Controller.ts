@@ -3,8 +3,10 @@ import {
   getAllKhoaVien,
   updateKhoaVien,
   deleteKhoaVien,
+  importKhoaVienFromExcel,
 } from "services/khoa_vien_Service";
-import e, { Request, Response } from "express";
+import { Request, Response } from "express";
+import { excelUploadMiddleware } from "../Middleware/multer";
 
 const VN_PHONE_PREFIXES = [
   "086",
@@ -167,4 +169,47 @@ export const deleteKhoaVienController = async (req: Request, res: Response) => {
     console.error(error);
     res.status(500).json({ message: "Internal server error" });
   }
+};
+
+export const importKhoaVienController = async (req: Request, res: Response) => {
+  // Sử dụng middleware excel
+  const upload = excelUploadMiddleware("excel");
+
+  upload(req, res, async (err: any) => {
+    try {
+      if (err) {
+        return res.status(400).json({
+          errorCode: 1,
+          message: err.message,
+        });
+      }
+
+      if (!req.file) {
+        return res.status(400).json({
+          errorCode: 1,
+          message: "Vui lòng chọn file Excel",
+        });
+      }
+
+      const result = await importKhoaVienFromExcel(req.file);
+
+      return res.status(200).json({
+        errorCode: result.failed > 0 ? 1 : 0,
+        message:
+          `Import thành công ${result.imported} khoa viện` +
+          (result.failed > 0 ? `, ${result.failed} bản ghi lỗi` : ""),
+        data: {
+          imported: result.imported,
+          failed: result.failed,
+          results: result.results,
+          errors: result.errors,
+        },
+      });
+    } catch (error: any) {
+      return res.status(500).json({
+        errorCode: 1,
+        message: error.message,
+      });
+    }
+  });
 };

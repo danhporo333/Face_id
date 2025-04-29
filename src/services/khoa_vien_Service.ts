@@ -1,4 +1,7 @@
 import { prisma } from "config/client";
+import { validatePhoneNumber } from "../utils/validator";
+import { parseExcelFile } from "../utils/excelImport";
+import fs from "fs";
 
 interface IKhoaVien {
   tenkv: string;
@@ -88,4 +91,59 @@ export const deleteKhoaVien = async (makv: string) => {
     where: { makv: makv },
   });
   return deletedKhoaVien;
+};
+
+export const importKhoaVienFromExcel = async (file: Express.Multer.File) => {
+  // Map tên cột excel về tên field DB (không phân biệt hoa thường)
+  const columnMap = {
+    tenkv: "tenkv",
+    "tên khoa viện": "tenkv",
+    tenkhoa: "tenkv",
+    "ten khoa": "tenkv",
+    dtkv: "dtkv",
+    "điện thoại": "dtkv",
+    sdt: "dtkv",
+    "số điện thoại": "dtkv",
+    diachi: "diaChi",
+    "địa chỉ": "diaChi",
+    "dia chi": "diaChi",
+  };
+
+  try {
+    const data = parseExcelFile<IKhoaVien>(file.path, columnMap);
+
+    if (!Array.isArray(data) || data.length === 0) {
+      throw new Error("File Excel không có dữ liệu hoặc sai định dạng");
+    }
+
+    const results = [];
+    const errors = [];
+
+    for (const [index, row] of data.entries()) {
+      try {
+        if (!row.tenkv) throw new Error("Tên khoa viện không được để trống");
+        if (row.dtkv && !validatePhoneNumber(row.dtkv)) {
+          throw new Error("Số điện thoại không hợp lệ");
+        }
+        const existing = await prisma.khoaVien.findFirst({
+          where: { tenkv: row.tenkv },
+        });
+        if (existing) throw new Error("Khoa viện đã tồn tại");
+        const created = await prisma.khoaVien.create({ data: row });
+        results.push(created);
+      } catch (error: any) {
+        errors.push({ row: index + 2, error: error.message });
+      }
+    }
+
+    // Xóa file sau khi import xong nếu muốn
+    // fs.unlinkSync(file.path);
+
+    return { imported: results.length, failed: errors.length, results, errors };
+  } catch (error: any) {
+    try {
+      fs.unlinkSync(file.path);
+    } catch {}
+    throw new Error(`Lỗi import: ${error.message}`);
+  }
 };

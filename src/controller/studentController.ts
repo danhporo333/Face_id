@@ -6,7 +6,7 @@ import {
   deleteStudent,
 } from "services/studentService";
 import { uploadSingleFile } from "services/fileService";
-import fileUploadMiddleware from "../Middleware/multer";
+import { fileUploadMiddleware } from "../Middleware/multer";
 const VN_PHONE_PREFIXES = [
   "086",
   "096",

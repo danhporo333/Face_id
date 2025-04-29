@@ -1,6 +1,6 @@
 import { Request, Response } from "express";
 import { uploadSingleFile } from "services/fileService";
-import fileUploadMiddleware from "../Middleware/multer";
+import { fileUploadMiddleware } from "../Middleware/multer";
 import path from "path";
 
 // export const uploadFile = async (req: Request, res: Response) => {

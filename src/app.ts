@@ -10,6 +10,7 @@ const port = process.env.PORT || 8080;
 //config file upload
 // app.use(fileUpload());
 app.use("/image", express.static(path.join(__dirname, "Public/image")));
+app.use("/excel", express.static(path.join(__dirname, "Public/excel/imports")));
 
 //config req.body
 app.use(cors()); //Cho phép tất cả nguồn gọi API
