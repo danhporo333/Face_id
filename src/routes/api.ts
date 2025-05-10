@@ -28,6 +28,7 @@ import {
   getAllStudentsController,
   updateStudentController,
   deleteStudentController,
+  getStudentByMSSV,
 } from "controller/studentController";
 import {
   createMonHocController,
@@ -59,7 +60,10 @@ import {
   getLichHocCaNhanController,
 } from "controller/tkbController";
 
-// import { importKhoaVienController } from "controller/importKhoaVienController";
+import {
+  diemDanhFaceIDController,
+  diemDanhFaceID,
+} from "controller/diemdanhController";
 
 const router: Router = express.Router();
 
@@ -90,6 +94,7 @@ router.post("/createstudent", createStudentController);
 router.get("/allstudents", getAllStudentsController);
 router.put("/updatestudent", updateStudentController);
 router.delete("/deletestudent/:mssv", deleteStudentController);
+router.get("/student/:mssv", getStudentByMSSV);
 
 //api mon hoc
 router.post("/createmonhoc", createMonHocController);
@@ -123,4 +128,9 @@ router.get(
   checkRole(["STUDENT"]),
   getLichHocCaNhanController
 );
+
+//api diem danh
+router.post("/diemdanh/faceid", diemDanhFaceIDController);
+router.post("/diemdanh/faceid", diemDanhFaceID);
+
 export default router;

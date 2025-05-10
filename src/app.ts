@@ -11,7 +11,13 @@ const port = process.env.PORT || 8080;
 // app.use(fileUpload());
 app.use("/image", express.static(path.join(__dirname, "Public/image")));
 app.use("/excel", express.static(path.join(__dirname, "Public/excel/imports")));
-
+app.use(
+  "/model",
+  express.static(
+    path.join(__dirname, "../../../face_id/frontend/src/Public/model")
+  )
+);
+app.use(express.static(path.join(__dirname, "../../../face_id/frontend/src")));
 //config req.body
 app.use(cors()); //Cho phép tất cả nguồn gọi API
 app.use(express.json()); // for json

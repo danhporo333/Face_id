@@ -7,6 +7,7 @@ import {
 } from "services/studentService";
 import { uploadSingleFile } from "services/fileService";
 import { fileUploadMiddleware } from "../Middleware/multer";
+import { prisma } from "config/client";
 const VN_PHONE_PREFIXES = [
   "086",
   "096",
@@ -308,5 +309,19 @@ export const deleteStudentController = async (req: Request, res: Response) => {
     res.status(500).json({
       message: "Internal server error",
     });
+  }
+};
+
+export const getStudentByMSSV = async (req: Request, res: Response) => {
+  const { mssv } = req.params;
+  try {
+    const student = await prisma.sV.findUnique({ where: { mssv } });
+    if (!student) {
+      res.status(404).json({ message: "Không tìm thấy sinh viên" });
+      return;
+    }
+    res.json({ data: student });
+  } catch (error) {
+    res.status(500).json({ message: "Internal server error" });
   }
 };
