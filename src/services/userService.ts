@@ -119,11 +119,25 @@ export const loginUser = async (username: string, password: string) => {
     throw new Error("Mật khẩu không đúng");
   }
 
+  let holot, ten, hoGV, tenGV;
+  if (user.role === "STUDENT" && user.sinhVien) {
+    holot = user.sinhVien.holot;
+    ten = user.sinhVien.ten;
+  }
+  if (user.role === "TEACHER" && user.giangVien) {
+    hoGV = user.giangVien.hoGV;
+    tenGV = user.giangVien.tenGV;
+  }
+
   const token = jwt.sign(
     {
       id: user.id,
       username: user.username,
       role: user.role,
+      holot,
+      ten,
+      hoGV,
+      tenGV,
     },
     JWT_SECRET,
     {

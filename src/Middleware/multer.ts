@@ -5,7 +5,8 @@ import fs from "fs";
 
 export const fileUploadMiddleware = (
   fieldName: string,
-  dir: string = "student"
+  dir: string = "student",
+  maxCount = 50
 ) => {
   // Create absolute path to the upload directory
   const uploadPath = path.resolve(__dirname, "../Public/image", dir);

@@ -1,4 +1,7 @@
 import { prisma } from "config/client";
+import { validatePhoneNumber } from "../utils/validator";
+import { parseExcelFile } from "../utils/excelImport";
+import fs from "fs";
 
 interface ILop {
   tenlop: string;
@@ -70,3 +73,73 @@ export const deleteClass = async (malop: string) => {
   });
   return deletedClass;
 };
+
+// export const importClassesFromExcel = async (file: Express.Multer.File) => {
+//   // Map tên cột excel về tên field DB (không phân biệt hoa thường, có dấu hoặc không dấu)
+//   const columnMapping = {
+//     tenlop: "tenlop",
+//     "tên lớp": "tenlop",
+//     "ten lop": "tenlop",
+//     siso: "siso",
+//     "sĩ số": "siso",
+//     "si so": "siso",
+//     makv: "makv",
+//     "mã khoa viện": "makv",
+//     "ma khoa vien": "makv",
+//     "ma kv": "makv",
+//   };
+
+//   try {
+//     const data = parseExcelFile<ILop>(file.path, columnMapping);
+
+//     if (!Array.isArray(data) || data.length === 0) {
+//       throw new Error("File Excel không có dữ liệu hoặc sai định dạng");
+//     }
+
+//     const results = [];
+//     const errors = [];
+
+//     for (const [index, row] of data.entries()) {
+//       try {
+//         // Validate required fields
+//         if (!row.tenlop) throw new Error("Tên lớp không được để trống");
+//         if (!row.siso) throw new Error("Sĩ số không được để trống");
+//         if (!row.makv) throw new Error("Mã khoa viện không được để trống");
+
+//         // Kiểm tra khoa viện tồn tại
+//         const khoaVien = await prisma.khoaVien.findUnique({
+//           where: { makv: row.makv },
+//         });
+//         if (!khoaVien) throw new Error("Khoa viện không tồn tại");
+
+//         // Kiểm tra lớp đã tồn tại chưa
+//         const existingClass = await prisma.lop.findFirst({
+//           where: { tenlop: row.tenlop },
+//         });
+//         if (existingClass) throw new Error("Lớp đã tồn tại");
+
+//         // Tạo mới lớp
+//         const created = await prisma.lop.create({
+//           data: {
+//             tenlop: row.tenlop,
+//             siso: +row.siso,
+//             makv: row.makv,
+//           },
+//         });
+//         results.push(created);
+//       } catch (error: any) {
+//         errors.push({ row: index + 2, error: error.message });
+//       }
+//     }
+
+//     // Xóa file sau khi import xong nếu muốn
+//     fs.unlinkSync(file.path);
+
+//     return { imported: results.length, failed: errors.length, results, errors };
+//   } catch (error: any) {
+//     try {
+//       fs.unlinkSync(file.path);
+//     } catch {}
+//     throw new Error(`Lỗi import: ${error.message}`);
+//   }
+// };

@@ -137,7 +137,7 @@ export const importKhoaVienFromExcel = async (file: Express.Multer.File) => {
     }
 
     // Xóa file sau khi import xong nếu muốn
-    // fs.unlinkSync(file.path);
+    fs.unlinkSync(file.path);
 
     return { imported: results.length, failed: errors.length, results, errors };
   } catch (error: any) {

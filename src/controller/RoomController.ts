@@ -9,6 +9,7 @@ import {
 export const createRoomController = async (req: Request, res: Response) => {
   try {
     const { tenPhong, sucChua, coSo } = req.body;
+    console.log("reqbody", req.body);
 
     // Validate input
     if (!tenPhong || !sucChua || !coSo) {
@@ -16,6 +17,7 @@ export const createRoomController = async (req: Request, res: Response) => {
         errorCode: 1,
         message: "Vui lòng điền đầy đủ thông tin",
       });
+      return;
     }
 
     // Validate sucChua
@@ -24,6 +26,7 @@ export const createRoomController = async (req: Request, res: Response) => {
         errorCode: 1,
         message: "Sức chứa phòng phải lớn hơn 0",
       });
+      return;
     }
 
     const newRoom = await createRoom({
@@ -37,17 +40,20 @@ export const createRoomController = async (req: Request, res: Response) => {
       message: "Tạo phòng học thành công",
       data: newRoom,
     });
+    return;
   } catch (error: any) {
     if (error.message === "Phòng học này đã tồn tại") {
       res.status(400).json({
         errorCode: 1,
         message: "Phòng học này đã tồn tại trong hệ thống",
       });
+      return;
     }
     res.status(500).json({
       errorCode: 1,
       message: "Internal server error",
     });
+    return;
   }
 };
 

@@ -24,7 +24,7 @@ import path from "path";
 // };
 
 export const uploadFile = (req: Request, res: Response) => {
-  const uploadMiddleware = fileUploadMiddleware("image", "uploads");
+  const uploadMiddleware = fileUploadMiddleware("image", "uploads", 50);
 
   uploadMiddleware(req, res, function (err: any) {
     if (err) {
@@ -34,7 +34,9 @@ export const uploadFile = (req: Request, res: Response) => {
       });
     }
 
-    if (!req.file) {
+    // req.files là mảng các file
+    const files = req.files as Express.Multer.File[];
+    if (!files || files.length === 0) {
       return res.status(400).json({
         errorCode: 1,
         message: "No file uploaded",
@@ -43,13 +45,13 @@ export const uploadFile = (req: Request, res: Response) => {
 
     return res.status(200).json({
       EC: 0,
-      data: {
+      data: files.map((file) => ({
         status: "success",
-        name: req.file.filename,
-        path: req.file.path,
-        mimetype: req.file.mimetype,
-        size: req.file.size,
-      },
+        name: file.filename,
+        path: file.path,
+        mimetype: file.mimetype,
+        size: file.size,
+      })),
     });
   });
 };
