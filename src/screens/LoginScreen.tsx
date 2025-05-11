@@ -8,16 +8,26 @@ import {
   Platform,
 } from "react-native";
 import loginStyles from "../components/style/LoginScreen.style";
-const FAKE_USER = { username: "admin", password: "123456" };
+import { useNavigation } from "@react-navigation/native";
+import type { NativeStackNavigationProp } from "@react-navigation/native-stack";
+import type { RootStackParamList } from "../../App";
+import { loginApi } from "../services/authService";
 
 const LoginScreen = () => {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
+  const navigation =
+    useNavigation<NativeStackNavigationProp<RootStackParamList, "Login">>();
 
-  const handleLogin = () => {
-    if (username === FAKE_USER.username && password === FAKE_USER.password) {
-      alert("Đăng nhập thành công!");
-    } else {
+  const handleLogin = async () => {
+    try {
+      const data = await loginApi(username, password);
+      navigation.reset({
+        index: 0,
+        routes: [{ name: "Home", params: { token: data.data.token } }],
+      });
+    } catch (error) {
+      console.log("Login error:", error);
       alert("Sai tài khoản hoặc mật khẩu!");
     }
   };

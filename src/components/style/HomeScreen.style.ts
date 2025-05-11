@@ -1,0 +1,113 @@
+import { StyleSheet } from "react-native";
+
+const HomeScreenStyles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: "#f7f7f7",
+    paddingTop: 10,
+  },
+  weekBar: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    marginBottom: 8,
+    marginTop: 20,
+  },
+  arrow: {
+    fontSize: 28,
+    fontWeight: "bold",
+    color: "#222",
+    paddingHorizontal: 18,
+  },
+  weekText: {
+    fontSize: 18,
+    fontWeight: "bold",
+    color: "#222",
+    minWidth: 200,
+    textAlign: "center",
+  },
+  header: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    paddingHorizontal: 16,
+    paddingBottom: 8,
+    backgroundColor: "#fff",
+    borderBottomWidth: 1,
+    borderBottomColor: "#eee",
+  },
+  headerTitle: {
+    fontSize: 22,
+    fontWeight: "bold",
+    color: "#222",
+    marginTop: 50,
+  },
+  logoutBtn: {
+    backgroundColor: "#e0e0e0",
+    paddingHorizontal: 14,
+    paddingVertical: 6,
+    borderRadius: 6,
+    marginTop: 50,
+  },
+  logoutText: {
+    color: "#333",
+    fontWeight: "bold",
+  },
+  dayBlock: {
+    backgroundColor: "#fff",
+    marginBottom: 16,
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: "#eee",
+    shadowColor: "#000",
+    shadowOpacity: 0.04,
+    shadowRadius: 2,
+    elevation: 1,
+  },
+  dayText: {
+    color: "#e53935",
+    fontWeight: "bold",
+    fontSize: 20,
+    marginBottom: 8,
+  },
+  lessonBlock: {
+    marginBottom: 12,
+    marginLeft: 8,
+    padding: 8,
+    backgroundColor: "#f9f9f9",
+    borderRadius: 6,
+  },
+  lessonLabel: {
+    fontWeight: "400",
+    fontSize: 18,
+    color: "#444",
+    marginBottom: 0,
+  },
+  period: {
+    fontWeight: "bold",
+    fontSize: 18,
+    color: "#222",
+    marginBottom: 2,
+    marginLeft: 0,
+  },
+  lessonSubject: {
+    fontSize: 18,
+    color: "#222",
+    marginLeft: 0,
+    marginBottom: 2,
+  },
+  roomText: {
+    fontSize: 18,
+    color: "#444",
+    marginLeft: 0,
+    marginTop: 2,
+  },
+  roomBold: {
+    fontSize: 18,
+    fontWeight: "bold",
+    color: "#222",
+  },
+});
+export default HomeScreenStyles;
