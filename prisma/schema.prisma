@@ -20,6 +20,7 @@ model KhoaVien {
   dtkv    String?
   diaChi  String?
   lop     Lop[]
+  @@map("khoaVien")
 }
 
 // Bảng Lớp
