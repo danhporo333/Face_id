@@ -60,10 +60,7 @@ import {
   getLichHocCaNhanController,
 } from "controller/tkbController";
 
-import {
-  diemDanhFaceIDController,
-  diemDanhFaceID,
-} from "controller/diemdanhController";
+import { diemDanhFaceID } from "controller/diemdanhController";
 
 const router: Router = express.Router();
 
@@ -130,7 +127,6 @@ router.get(
 );
 
 //api diem danh
-router.post("/diemdanh/faceid", diemDanhFaceIDController);
 router.post("/diemdanh/faceid", diemDanhFaceID);
 
 export default router;
