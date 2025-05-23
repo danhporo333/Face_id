@@ -19,7 +19,14 @@ app.use(
 );
 app.use(express.static(path.join(__dirname, "../../../face_id/frontend/src")));
 //config req.body
-app.use(cors()); //Cho phép tất cả nguồn gọi API
+app.use(
+  cors({
+    origin: "http://127.0.0.1:5501", // Thay thế bằng URL của frontend
+    methods: ["GET", "POST", "PUT", "DELETE"], // Cho phép các phương thức HTTP cần thiết
+    allowedHeaders: ["Content-Type", "Authorization"], // Cấu hình cho phép các header như Authorization (Token)
+    credentials: true, // Cho phép gửi cookie trong các yêu cầu cross-origin
+  })
+);
 app.use(express.json()); // for json
 app.use(express.urlencoded({ extended: true })); // for form data
 
