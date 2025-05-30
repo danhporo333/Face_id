@@ -37,13 +37,18 @@ export const createKhoaVien = async (khoaVien: IKhoaVien) => {
   return khoavien;
 };
 
-export const getAllKhoaVien = async () => {
-  const khoavien = await prisma.khoaVien.findMany({
-    include: {
-      lop: true,
-    },
-  });
-  return khoavien;
+export const getAllKhoaVien = async (page: number, pageSize: number) => {
+  // Số lượng khoa viện trên mỗi trang
+  const skip = (page - 1) * pageSize;
+  const [khoavien, total] = await Promise.all([
+    prisma.khoaVien.findMany({
+      skip,
+      take: pageSize,
+      include: { lop: true },
+    }),
+    prisma.khoaVien.count(),
+  ]);
+  return { khoavien, total };
 };
 
 export const updateKhoaVien = async (makv: string, khoavien: IKhoaVien) => {

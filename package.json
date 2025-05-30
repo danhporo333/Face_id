@@ -6,8 +6,7 @@
   "scripts": {
     "start": "nodemon",
     "start:server": "nodemon --watch src --ext ts,tsx --exec \"ts-node -r tsconfig-paths/register ./src/app.ts\"",
-    "start:tunnel": "nodemon --watch src --ext ts,tsx --exec \"npx localtunnel --port 8000 --subdomain danhproject8000\"",
-    "dev": "concurrently \"npm run start:server\" \"npm run start:tunnel\"",
+    "dev": "npm run start:server",
     "test": "echo \"Error: no test specified\" && exit 1",
     "start:debug": "nodemon --inspect=9229 -e ts,tsx --exec node -r ts-node/register -r tsconfig-paths/register ./src/app.ts"
   },

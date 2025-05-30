@@ -94,17 +94,23 @@ export const createKhoaVienController = async (req: Request, res: Response) => {
 
 export const getAllKhoaVienController = async (req: Request, res: Response) => {
   try {
-    const khoavien = await getAllKhoaVien();
-    const khoavienCount = khoavien.length;
+    const page = +(req.query.current || 1);
+    const pageSize = +(req.query.pageSize || 3);
+    const { khoavien, total } = await getAllKhoaVien(page, pageSize);
+    const pages = Math.ceil(total / pageSize);
+
     res.status(200).json({
-      message: "Lấy danh sách khoa viện thành công",
       data: {
-        khoavienCount: khoavienCount,
-        khoavien: khoavien,
+        meta: {
+          current: page,
+          pageSize: pageSize,
+          pages: pages,
+          total: total,
+        },
+        result: khoavien,
       },
     });
   } catch (error) {
-    console.error(error);
     res.status(500).json({ message: "Internal server error" });
   }
 };
