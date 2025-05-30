@@ -106,6 +106,7 @@ export const getAllKhoaVienController = async (req: Request, res: Response) => {
           pageSize: pageSize,
           pages: pages,
           total: total,
+          result_count: khoavien.length,
         },
         result: khoavien,
       },
