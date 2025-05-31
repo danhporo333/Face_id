@@ -8,6 +8,17 @@ import {
 import { uploadSingleFile } from "services/fileService";
 import { fileUploadMiddleware } from "../Middleware/multer";
 import { prisma } from "config/client";
+
+interface IStudent {
+  malop: string;
+  holot: string;
+  ten: string;
+  ntns: Date;
+  phai: string;
+  dt_sv?: string;
+  emailSV?: string;
+  faceID?: string;
+}
 const VN_PHONE_PREFIXES = [
   "086",
   "096",
@@ -162,16 +173,27 @@ export const createStudentController = async (req: Request, res: Response) => {
 
 export const getAllStudentsController = async (req: Request, res: Response) => {
   try {
-    const students = await getAllStudents();
-    const formattedStudents = students.map((student) => ({
+    const page = +(req.query.current || 1);
+    const pageSize = +(req.query.pageSize || 5);
+    const { result: students, total } = await getAllStudents(page, pageSize);
+
+    const formattedStudents = (students as IStudent[]).map((student) => ({
       ...student,
       ntns: formatDate(new Date(student.ntns)), // Chuyển sang DD/MM/YYYY
     }));
-    const studentCount = formattedStudents.length;
+
+    const pages = Math.ceil(total / pageSize);
+
     res.status(200).json({
       message: "Lấy danh sách sinh viên thành công",
       data: {
-        studentCount,
+        meta: {
+          current: page,
+          pageSize,
+          pages,
+          total,
+          count: formattedStudents.length,
+        },
         students: formattedStudents,
       },
     });

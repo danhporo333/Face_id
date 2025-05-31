@@ -3,6 +3,7 @@ import bcrypt from "bcrypt";
 import { prisma } from "config/client";
 import jwt from "jsonwebtoken";
 const JWT_SECRET = process.env.JWT_SECRET || "your-secret-key";
+import { paginate } from "utils/paginate";
 
 interface IUser {
   email: string;
@@ -75,14 +76,18 @@ export const createUser = async (user: IUser) => {
   return newUser;
 };
 
-export const getAllUsers = async () => {
-  const users = await prisma.user.findMany({
-    include: {
-      sinhVien: true,
-      giangVien: true,
-    },
+export const getAllUsers = async (page: number, pageSize: number) => {
+  // const users = await prisma.user.findMany({
+  //   include: {
+  //     sinhVien: true,
+  //     giangVien: true,
+  //   },
+  // });
+  // return users;
+  return paginate(prisma.user, page, pageSize, {
+    sinhVien: true,
+    giangVien: true,
   });
-  return users;
 };
 
 export const deleteUser = async (id: string) => {

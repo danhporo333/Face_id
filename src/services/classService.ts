@@ -2,6 +2,7 @@ import { prisma } from "config/client";
 import { validatePhoneNumber } from "../utils/validator";
 import { parseExcelFile } from "../utils/excelImport";
 import fs from "fs";
+import { paginate } from "utils/paginate";
 
 interface ILop {
   tenlop: string;
@@ -46,13 +47,8 @@ export const createClass = async (lop: ILop) => {
   return newClass;
 };
 
-export const getAllClass = async () => {
-  const lop = await prisma.lop.findMany({
-    include: {
-      khoaVien: true,
-    },
-  });
-  return lop;
+export const getAllClass = async (page: number, pageSize: number) => {
+  return paginate(prisma.lop, page, pageSize, { khoaVien: true });
 };
 
 export const updateClass = async (malop: string, lop: ILop) => {

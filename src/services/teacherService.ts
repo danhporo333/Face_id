@@ -1,4 +1,5 @@
 import { prisma } from "config/client";
+import { paginate } from "utils/paginate";
 
 interface ITeacher {
   hoGV: string;
@@ -35,15 +36,16 @@ export const createTeacher = async (teacher: ITeacher) => {
   }
 };
 
-export const getAllTeachers = async () => {
+export const getAllTeachers = async (page: number, pageSize: number) => {
   try {
-    const teachers = await prisma.gV.findMany({
-      include: {
-        tkb: true,
-        user: true,
-      },
-    });
-    return teachers;
+    // const teachers = await prisma.gV.findMany({
+    //   include: {
+    //     tkb: true,
+    //     user: true,
+    //   },
+    // });
+    // return teachers;
+    return paginate(prisma.gV, page, pageSize, { tkb: true, user: true });
   } catch (error) {
     throw new Error("Không thể lấy danh sách giảng viên");
   }

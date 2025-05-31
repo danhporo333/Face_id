@@ -55,14 +55,22 @@ export const createMonHocController = async (req: Request, res: Response) => {
 
 export const getAllMonHocController = async (req: Request, res: Response) => {
   try {
-    const monhoc = await getAllMonHoc();
-    const monhocCount = monhoc.length;
+    const page = +(req.query.current || 1);
+    const pageSize = +(req.query.pageSize || 5);
+    const { result: monhoc, total } = await getAllMonHoc(page, pageSize);
+    const pages = Math.ceil(total / pageSize);
 
     res.status(200).json({
       message: "Lấy danh sách môn học thành công",
       data: {
-        monhocCount,
-        monhoc,
+        meta: {
+          current: page,
+          pageSize: pageSize,
+          pages: pages,
+          total: total,
+          count: monhoc.length,
+        },
+        monhoc: monhoc,
       },
     });
   } catch (error) {

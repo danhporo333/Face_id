@@ -46,12 +46,21 @@ export const createClassController = async (req: Request, res: Response) => {
 
 export const getAllClassController = async (req: Request, res: Response) => {
   try {
-    const classes = await getAllClass();
-    const classCount = classes.length;
+    const page = +(req.query.current || 1);
+    const pageSize = +(req.query.pageSize || 5);
+    const { result: classes, total } = await getAllClass(page, pageSize);
+    const pages = Math.ceil(total / pageSize);
+    // const classCount = classes.length;
     res.status(200).json({
       message: "Lấy danh sách lớp thành công",
       data: {
-        classCount: classCount,
+        meta: {
+          current: page,
+          pageSize: pageSize,
+          pages: pages,
+          total: total,
+          result_count: classes.length,
+        },
         classes: classes,
       },
     });

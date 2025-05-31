@@ -95,15 +95,23 @@ export const createTeacherController = async (req: Request, res: Response) => {
 
 export const getAllTeachersController = async (req: Request, res: Response) => {
   try {
-    const teachers = await getAllTeachers();
-    const teachersCount = teachers.length;
+    const page = +(req.query.current || 1);
+    const pageSize = +(req.query.pageSize || 5);
+    const { result: teachers, total } = await getAllTeachers(page, pageSize);
+    const pages = Math.ceil(total / pageSize);
 
     res.status(200).json({
       errorCode: 0,
       message: "Lấy danh sách giảng viên thành công",
       data: {
-        teachersCount,
-        teachers,
+        meta: {
+          current: page,
+          pageSize: pageSize,
+          pages: pages,
+          total: total,
+          result_count: teachers.length,
+        },
+        teachers: teachers,
       },
     });
   } catch (error: any) {

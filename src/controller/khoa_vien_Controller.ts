@@ -96,7 +96,7 @@ export const getAllKhoaVienController = async (req: Request, res: Response) => {
   try {
     const page = +(req.query.current || 1);
     const pageSize = +(req.query.pageSize || 3);
-    const { khoavien, total } = await getAllKhoaVien(page, pageSize);
+    const { result: khoavien, total } = await getAllKhoaVien(page, pageSize);
     const pages = Math.ceil(total / pageSize);
 
     res.status(200).json({

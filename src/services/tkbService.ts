@@ -1,4 +1,5 @@
 import { prisma } from "config/client";
+import { paginate } from "utils/paginate";
 
 interface ITKB {
   thu: string;
@@ -90,16 +91,22 @@ export const createTKB = async (tkb: ITKB) => {
   return newTKB;
 };
 
-export const getAllTKB = async () => {
-  const tkbs = await prisma.tKB.findMany({
-    include: {
-      monHoc: true,
-      giangVien: true,
-      phong: true,
-      diemDanh: true,
-    },
+export const getAllTKB = async (page: number, pageSize: number) => {
+  // const tkbs = await prisma.tKB.findMany({
+  //   include: {
+  //     monHoc: true,
+  //     giangVien: true,
+  //     phong: true,
+  //     diemDanh: true,
+  //   },
+  // });
+  // return tkbs;
+  return paginate(prisma.tKB, page, pageSize, {
+    monHoc: true,
+    giangVien: true,
+    phong: true,
+    diemDanh: true,
   });
-  return tkbs;
 };
 
 export const updateTKB = async (id: string, tkb: Partial<ITKB>) => {

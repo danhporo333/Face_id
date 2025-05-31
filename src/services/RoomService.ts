@@ -1,4 +1,5 @@
 import { prisma } from "config/client";
+import { paginate } from "utils/paginate";
 
 interface IRoom {
   tenPhong: string;
@@ -36,14 +37,15 @@ export const createRoom = async (room: IRoom) => {
   }
 };
 
-export const getAllRooms = async () => {
+export const getAllRooms = async (page: number, pageSize: number) => {
   try {
-    const rooms = await prisma.phong.findMany({
-      include: {
-        tkb: true,
-      },
-    });
-    return rooms;
+    // const rooms = await prisma.phong.findMany({
+    //   include: {
+    //     tkb: true,
+    //   },
+    // });
+    // return rooms;
+    return paginate(prisma.phong, page, pageSize, { tkb: true });
   } catch (error) {
     throw error;
   }

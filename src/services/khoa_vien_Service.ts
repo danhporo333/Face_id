@@ -2,6 +2,7 @@ import { prisma } from "config/client";
 import { validatePhoneNumber } from "../utils/validator";
 import { parseExcelFile } from "../utils/excelImport";
 import fs from "fs";
+import { paginate } from "../utils/paginate";
 
 interface IKhoaVien {
   tenkv: string;
@@ -39,16 +40,17 @@ export const createKhoaVien = async (khoaVien: IKhoaVien) => {
 
 export const getAllKhoaVien = async (page: number, pageSize: number) => {
   // Số lượng khoa viện trên mỗi trang
-  const skip = (page - 1) * pageSize;
-  const [khoavien, total] = await Promise.all([
-    prisma.khoaVien.findMany({
-      skip,
-      take: pageSize,
-      include: { lop: true },
-    }),
-    prisma.khoaVien.count(),
-  ]);
-  return { khoavien, total };
+  // const skip = (page - 1) * pageSize;
+  // const [khoavien, total] = await Promise.all([
+  //   prisma.khoaVien.findMany({
+  //     skip,
+  //     take: pageSize,
+  //     include: { lop: true },
+  //   }),
+  //   prisma.khoaVien.count(),
+  // ]);
+  // return { khoavien, total };
+  return paginate(prisma.khoaVien, page, pageSize, { lop: true });
 };
 
 export const updateKhoaVien = async (makv: string, khoavien: IKhoaVien) => {

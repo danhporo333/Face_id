@@ -60,15 +60,24 @@ export const login = async (req: Request, res: Response) => {
 
 export const getAllUsersController = async (req: Request, res: Response) => {
   try {
-    const users = await getAllUsers();
-    const userCount = users.length;
+    const page = +(req.query.current || 1);
+    const pageSize = +(req.query.pageSize || 5);
+    const { result: users, total } = await getAllUsers(page, pageSize);
+    const pages = Math.ceil(total / pageSize);
+    // const userCount = users.length;
 
     res.status(200).json({
       errorCode: 0,
       message: "Lấy danh sách tài khoản thành công",
       data: {
-        userCount,
-        users,
+        meta: {
+          current: page,
+          pageSize: pageSize,
+          pages: pages,
+          total: total,
+          userCount: users.length,
+        },
+        users: users,
       },
     });
   } catch (error) {

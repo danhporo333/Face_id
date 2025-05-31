@@ -1,4 +1,5 @@
 import { prisma } from "config/client";
+import { paginate } from "utils/paginate";
 
 interface IStudent {
   malop: string;
@@ -43,9 +44,12 @@ export const createStudent = async (student: IStudent) => {
   return newStudent;
 };
 
-export const getAllStudents = async () => {
-  const students = await prisma.sV.findMany({
-    include: {
+export const getAllStudents = async (page: number, pageSize: number) => {
+  return paginate(
+    prisma.sV,
+    page,
+    pageSize,
+    {
       lop: {
         include: {
           khoaVien: true,
@@ -53,11 +57,9 @@ export const getAllStudents = async () => {
       },
       diemDanh: true,
     },
-    orderBy: {
-      malop: "asc",
-    },
-  });
-  return students;
+    {}, // <--- đây là where, hiện tại bạn không lọc gì cả
+    { malop: "asc" }
+  );
 };
 
 export const updateStudent = async (

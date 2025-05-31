@@ -1,4 +1,5 @@
 import { prisma } from "config/client";
+import { paginate } from "utils/paginate";
 
 interface IMonHoc {
   tenmh: string;
@@ -29,13 +30,14 @@ export const createMonHoc = async (monhoc: IMonHoc) => {
   return newSubject;
 };
 
-export const getAllMonHoc = async () => {
-  const subjects = await prisma.monHoc.findMany({
-    include: {
-      tkb: true,
-    },
-  });
-  return subjects;
+export const getAllMonHoc = async (page: number, pageSize: number) => {
+  // const subjects = await prisma.monHoc.findMany({
+  //   include: {
+  //     tkb: true,
+  //   },
+  // });
+  // return subjects;
+  return paginate(prisma.monHoc, page, pageSize, { tkb: true });
 };
 
 export const updateMonHoc = async (mamh: string, monhoc: Partial<IMonHoc>) => {

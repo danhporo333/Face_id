@@ -59,15 +59,23 @@ export const createRoomController = async (req: Request, res: Response) => {
 
 export const getAllRoomsController = async (req: Request, res: Response) => {
   try {
-    const rooms = await getAllRooms();
-    const roomCount = rooms.length;
+    const page = +(req.query.current || 1);
+    const pageSize = +(req.query.pageSize || 5);
+    const { result: rooms, total } = await getAllRooms(page, pageSize);
+    const pages = Math.ceil(total / pageSize);
 
     res.status(200).json({
       errorCode: 0,
       message: "Lấy danh sách phòng học thành công",
       data: {
-        roomCount,
-        rooms,
+        meta: {
+          current: page,
+          pageSize: pageSize,
+          pages: pages,
+          total: total,
+          roomCount: rooms.length,
+        },
+        rooms: rooms,
       },
     });
   } catch (error) {

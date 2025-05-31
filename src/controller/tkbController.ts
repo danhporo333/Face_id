@@ -10,6 +10,16 @@ import {
   getTKBByUserId,
 } from "services/tkbService";
 
+interface ITKB {
+  thu: string;
+  ngay: Date;
+  tietBD: number;
+  tietKT: number;
+  mamh: string;
+  mgv: string;
+  sop: string;
+}
+
 const formatDate = (date: Date): string => {
   const day = date.getDate().toString().padStart(2, "0");
   const month = (date.getMonth() + 1).toString().padStart(2, "0");
@@ -171,8 +181,11 @@ export const createTKBController = async (req: Request, res: Response) => {
 
 export const getAllTKBController = async (req: Request, res: Response) => {
   try {
-    const tkbs = await getAllTKB();
-    const formattedTkbs = tkbs.map((tkb) => ({
+    const page = +(req.query.current || 1);
+    const pageSize = +(req.query.pageSize || 5);
+    const { result: tkbs, total } = await getAllTKB(page, pageSize);
+    const pages = Math.ceil(total / pageSize);
+    const formattedTkbs = (tkbs as ITKB[]).map((tkb) => ({
       ...tkb,
       ngay: formatDate(new Date(tkb.ngay)),
     }));
@@ -181,7 +194,13 @@ export const getAllTKBController = async (req: Request, res: Response) => {
       errorCode: 0,
       message: "Lấy danh sách thời khóa biểu thành công",
       data: {
-        tkbCount: tkbs.length,
+        meta: {
+          current: page,
+          pageSize: pageSize,
+          pages: pages,
+          total: total,
+          tkbcount: formattedTkbs.length,
+        },
         tkbs: formattedTkbs,
       },
     });
