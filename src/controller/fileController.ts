@@ -35,23 +35,23 @@ export const uploadFile = (req: Request, res: Response) => {
     }
 
     // req.files là mảng các file
-    const files = req.files as Express.Multer.File[];
-    if (!files || files.length === 0) {
+    const file = req.file as Express.Multer.File;
+    if (!file) {
       return res.status(400).json({
         errorCode: 1,
-        message: "No file uploaded",
+        message: "No file upload",
       });
     }
 
     return res.status(200).json({
       EC: 0,
-      data: files.map((file) => ({
+      data: {
         status: "success",
         name: file.filename,
         path: file.path,
         mimetype: file.mimetype,
         size: file.size,
-      })),
+      },
     });
   });
 };
