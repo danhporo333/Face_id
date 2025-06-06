@@ -24,7 +24,7 @@ import path from "path";
 // };
 
 export const uploadFile = (req: Request, res: Response) => {
-  const uploadMiddleware = fileUploadMiddleware("image", "uploads", 50);
+  const uploadMiddleware = fileUploadMiddleware("image", "student", 50);
 
   uploadMiddleware(req, res, function (err: any) {
     if (err) {

@@ -84,6 +84,7 @@ export const createStudentController = async (req: Request, res: Response) => {
 
     try {
       const { malop, holot, ten, ntns, phai, dt_sv, emailSV, image } = req.body;
+      console.log("Received data:", req.body);
       if (!malop || !holot || !ten || !ntns || !phai) {
         return res.status(400).json({
           errorCode: 1,
@@ -127,10 +128,10 @@ export const createStudentController = async (req: Request, res: Response) => {
       const phoneNumber = dt_sv || generateVNPhoneNumber();
 
       let faceIDUrl = image || null;
-      // 🛑 Kiểm tra nếu có file đính kèm
-      if (req.file) {
+      if (req.file && req.file.filename) {
         faceIDUrl = req.file.filename;
-      } else {
+      }
+      if (!faceIDUrl) {
         return res.status(400).json({
           errorCode: 1,
           message: "Image is required!",
@@ -174,7 +175,7 @@ export const createStudentController = async (req: Request, res: Response) => {
 export const getAllStudentsController = async (req: Request, res: Response) => {
   try {
     const page = +(req.query.current || 1);
-    const pageSize = +(req.query.pageSize || 5);
+    const pageSize = +(req.query.pageSize || 1000);
     const { result: students, total } = await getAllStudents(page, pageSize);
 
     const formattedStudents = (students as IStudent[]).map((student) => ({
@@ -264,16 +265,19 @@ export const updateStudentController = async (req: Request, res: Response) => {
         faceIDUrl = req.file.filename;
       }
 
-      const updatedStudent = await updateStudent(mssv, {
+      // build object update, chỉ include các field thực sự có value
+      const updateData: Partial<IStudent> = {
         malop,
         holot,
         ten,
-        ntns: birthDate,
         phai,
         dt_sv,
         emailSV,
-        faceID: faceIDUrl,
-      });
+      };
+      if (birthDate !== null) updateData.ntns = birthDate;
+      if (faceIDUrl) updateData.faceID = faceIDUrl;
+
+      const updatedStudent = await updateStudent(mssv, updateData);
 
       return res.status(200).json({
         message: "Cập nhật sinh viên thành công",

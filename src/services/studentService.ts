@@ -85,6 +85,7 @@ export const updateStudent = async (
       throw new Error("Lớp không tồn tại");
     }
   }
+
   // cập nhật sinh viên
   const updatedStudent = await prisma.sV.update({
     where: { mssv },
