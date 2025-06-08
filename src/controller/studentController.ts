@@ -219,6 +219,7 @@ export const updateStudentController = async (req: Request, res: Response) => {
     try {
       const { mssv, malop, holot, ten, ntns, phai, dt_sv, emailSV, image } =
         req.body;
+      console.log("Received data:", req.body);
       if (!mssv) {
         return res.status(400).json({
           errorCode: 1,
@@ -260,8 +261,8 @@ export const updateStudentController = async (req: Request, res: Response) => {
         });
       }
 
-      let faceIDUrl = undefined;
-      if (req.file) {
+      let faceIDUrl: string | undefined = image;
+      if (req.file && req.file.filename) {
         faceIDUrl = req.file.filename;
       }
 
