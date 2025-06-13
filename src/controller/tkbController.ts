@@ -460,7 +460,7 @@ export const getLichHocCaNhanController = async (
 ) => {
   try {
     // Lấy ID người dùng từ JWT token (đã được xác thực qua middleware auth)
-    const userId = req.user.id;
+    const userId = req.user?.id;
 
     if (!userId) {
       res.status(401).json({

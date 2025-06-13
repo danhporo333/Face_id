@@ -1,5 +1,5 @@
 import express, { Router } from "express";
-import { auth, checkRole } from "../Middleware//auth";
+import { auth, checkRole } from "../Middleware/auth";
 import { fileUploadMiddleware } from "../Middleware/multer";
 
 import {
