@@ -2,6 +2,7 @@ import express from "express";
 import "dotenv/config";
 import path from "path";
 import cors from "cors";
+import passport from "./config/passport";
 import apiRoutes from "./routes/api";
 // import fileUpload from "express-fileupload";
 const app = express();
@@ -23,6 +24,8 @@ app.use(cors());
 app.use(express.json()); // for json
 app.use(express.urlencoded({ extended: true })); // for form data
 
+// Passport middleware
+app.use(passport.initialize());
 //khai báo routes
 app.use("/v1/api/", apiRoutes);
 
