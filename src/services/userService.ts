@@ -115,14 +115,14 @@ export const loginUser = async (username: string, password: string) => {
     },
   });
 
-  if (!user) {
-    throw new Error("Tài khoản không tồn tại");
+  const isValidCredentials =
+    user && (await bcrypt.compare(password, user.password));
+  if (!isValidCredentials) {
+    throw new Error("Thông tin tài khoản không chính xác");
   }
 
-  const isValidPassword = await bcrypt.compare(password, user.password);
-  if (!isValidPassword) {
-    throw new Error("Mật khẩu không đúng");
-  }
+  // Xóa password trước khi trả về
+  const { password: _, ...userWithoutPassword } = user;
 
   let holot, ten, hoGV, tenGV;
   if (user.role === "STUDENT" && user.sinhVien) {
@@ -150,5 +150,5 @@ export const loginUser = async (username: string, password: string) => {
     }
   );
 
-  return { user, token };
+  return { user: userWithoutPassword, token };
 };
