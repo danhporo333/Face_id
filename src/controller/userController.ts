@@ -46,6 +46,9 @@ export const register = async (req: Request, res: Response) => {
 
 export const login = async (req: Request, res: Response) => {
   try {
+    //delay
+    await new Promise((resolve) => setTimeout(resolve, 3000));
+
     const { username, password } = req.body;
     const { user, token } = await loginUser(username, password);
 

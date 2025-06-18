@@ -125,7 +125,6 @@ export const getAllTeachersController = async (req: Request, res: Response) => {
 export const updateTeacherController = async (req: Request, res: Response) => {
   try {
     const { mgv, hoGV, tenGV, dt_gv, donVi } = req.body;
-
     if (!mgv) {
       res.status(400).json({
         errorCode: 1,
@@ -139,6 +138,7 @@ export const updateTeacherController = async (req: Request, res: Response) => {
       dt_gv,
       donVi,
     });
+    console.log("Update result:", updatedTeacher);
 
     res.status(200).json({
       message: "Cập nhật giảng viên thành công",
@@ -151,6 +151,7 @@ export const updateTeacherController = async (req: Request, res: Response) => {
         message: error.message,
       });
     }
+    console.error("Update teacher error:", error);
     res.status(500).json({
       errorCode: 1,
       message: "Internal server error",
