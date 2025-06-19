@@ -59,16 +59,22 @@ import {
   ganLopVaoTKBController,
   getLichHocCaNhanController,
 } from "controller/tkbController";
-
 import { diemDanhFaceID } from "controller/diemdanhController";
+import { verifyTokenController } from "controller/authController";
 
 const router: Router = express.Router();
 
 //api user
 router.post("/register", register);
 router.post("/login", login);
-router.get("/allusers", getAllUsersController);
-router.delete("/deleteuser/:id", deleteUserController);
+router.get("/verify-token", verifyTokenController);
+router.get("/allusers", auth, checkRole(["ADMIN"]), getAllUsersController);
+router.delete(
+  "/deleteuser/:id",
+  auth,
+  checkRole(["ADMIN"]),
+  deleteUserController
+);
 
 //api upload file
 router.post("/upload", uploadFile);
