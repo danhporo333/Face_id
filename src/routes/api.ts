@@ -142,7 +142,12 @@ router.delete(
   checkRole(["ADMIN"]),
   deleteStudentController
 );
-router.get("/student/:mssv", auth, checkRole(["ADMIN"]), getStudentByMSSV);
+router.get(
+  "/student/:mssv",
+  auth,
+  checkRole(["ADMIN", "STUDENT"]),
+  getStudentByMSSV
+);
 
 //api mon hoc
 router.post(
