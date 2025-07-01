@@ -20,7 +20,16 @@ app.use(
 );
 app.use(express.static(path.join(__dirname, "../../../face_id/frontend/src")));
 //config req.body
-app.use(cors());
+app.use(
+  cors({
+    origin: [
+      "http://localhost:3000", // React dev server
+      "http://localhost:5173", // Vite dev server
+      "https://faceid.io.vn", // Production domain
+    ],
+    credentials: true,
+  })
+);
 app.use(express.json()); // for json
 app.use(express.urlencoded({ extended: true })); // for form data
 
