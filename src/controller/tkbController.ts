@@ -8,6 +8,7 @@ import {
   ganSinhVienVaoTKB,
   ganLopVaoTKB,
   getTKBByUserId,
+  getTKBByTeacherUserId,
 } from "services/tkbService";
 
 interface ITKB {
@@ -498,6 +499,62 @@ export const getLichHocCaNhanController = async (
     }
 
     console.error("Lỗi khi lấy thời khóa biểu sinh viên:", error);
+    res.status(500).json({
+      errorCode: 1,
+      message: "Lỗi máy chủ nội bộ",
+    });
+  }
+};
+
+export const getLichDayCaNhanController = async (
+  req: Request,
+  res: Response
+) => {
+  try {
+    // Lấy ID người dùng từ JWT token (đã được xác thực qua middleware auth)
+    const userId = req.user?.id;
+
+    if (!userId) {
+      res.status(401).json({
+        errorCode: 1,
+        message: "Không có quyền truy cập",
+      });
+      return;
+    }
+
+    const result = await getTKBByTeacherUserId(userId);
+
+    // Format ngày tháng để dễ đọc
+    const formattedTkbs = result.tkbs.map((tkb) => ({
+      ...tkb,
+      ngay: formatDate(new Date(tkb.ngay)),
+      lopHoc: tkb.diemDanh
+        .map((dd) => dd.sinhVien.lop?.tenlop)
+        .filter((lop, index, arr) => arr.indexOf(lop) === index), // Lấy danh sách lớp không trùng lặp
+      soSinhVien: tkb.diemDanh.length,
+    }));
+    res.status(200).json({
+      errorCode: 0,
+      message: "Lấy thời khóa biểu giảng viên thành công",
+      data: {
+        giangVien: result.teacher,
+        tkbs: formattedTkbs,
+      },
+    });
+  } catch (error: any) {
+    if (
+      error.message === "Không tìm thấy người dùng" ||
+      error.message === "Người dùng không phải là giảng viên" ||
+      error.message === "Giảng viên không tồn tại"
+    ) {
+      res.status(404).json({
+        errorCode: 1,
+        message: error.message,
+      });
+      return;
+    }
+
+    console.error("Lỗi khi lấy thời khóa biểu giảng viên:", error);
     res.status(500).json({
       errorCode: 1,
       message: "Lỗi máy chủ nội bộ",

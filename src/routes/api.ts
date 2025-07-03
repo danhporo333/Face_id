@@ -57,7 +57,8 @@ import {
   getTKBByStudentController,
   ganSinhVienVaoTKBController,
   ganLopVaoTKBController,
-  getLichHocCaNhanController,
+  getLichHocCaNhanController, // cho sinh viên
+  getLichDayCaNhanController, // cho giáo viên
 } from "controller/tkbController";
 import { diemDanhFaceID } from "controller/diemdanhController";
 import { verifyTokenController } from "controller/authController";
@@ -212,6 +213,8 @@ router.delete(
   checkRole(["ADMIN"]),
   deleteTKBController
 );
+
+// cho sinh viên
 router.get(
   "/tkb/student/:mssv",
   auth,
@@ -230,6 +233,14 @@ router.get(
   auth,
   checkRole(["STUDENT"]),
   getLichHocCaNhanController
+);
+
+// cho giáo viên
+router.get(
+  "/lich-day-ca-nhan",
+  auth,
+  checkRole(["TEACHER"]),
+  getLichDayCaNhanController
 );
 
 //api diem danh

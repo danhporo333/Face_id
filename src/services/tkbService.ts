@@ -383,6 +383,7 @@ export const getTKBByUserId = async (userId: string) => {
   // Sử dụng hàm hiện có để lấy thời khóa biểu của sinh viên
   return getTKBByStudentId(user.sinhVien.mssv);
 };
+
 // export const getCompleteStudentSchedule = async (mssv: string) => {
 //   // Kiểm tra sinh viên có tồn tại không
 //   const student = await prisma.sV.findUnique({
@@ -451,3 +452,56 @@ export const getTKBByUserId = async (userId: string) => {
 //     })
 //   };
 // };
+
+// lây lịch dạy của giảng viên
+export const getTKBByTeacherUserId = async (userId: string) => {
+  // Lấy thông tin người dùng kèm theo quan hệ với giảng viên
+  const user = await prisma.user.findUnique({
+    where: { id: userId },
+    include: {
+      giangVien: true,
+    },
+  });
+
+  if (!user) {
+    throw new Error("Không tìm thấy người dùng");
+  }
+
+  // Kiểm tra xem người dùng có phải là giảng viên không
+  if (user.role !== "TEACHER" || !user.giangVien) {
+    throw new Error("Người dùng không phải là giảng viên");
+  }
+
+  // Lấy tất cả TKB của giảng viên này
+  const tkbs = await prisma.tKB.findMany({
+    where: {
+      mgv: user.giangVien.mgv,
+    },
+    include: {
+      monHoc: true,
+      giangVien: true,
+      phong: true,
+      diemDanh: {
+        include: {
+          sinhVien: {
+            include: {
+              lop: true,
+            },
+          },
+        },
+      },
+    },
+    orderBy: [{ ngay: "asc" }, { tietBD: "asc" }],
+  });
+
+  return {
+    teacher: {
+      mgv: user.giangVien.mgv,
+      hoGV: user.giangVien.hoGV,
+      tenGV: user.giangVien.tenGV,
+      hoTen: `${user.giangVien.hoGV} ${user.giangVien.tenGV}`,
+      donVi: user.giangVien.donVi || "N/A",
+    },
+    tkbs: tkbs,
+  };
+};
