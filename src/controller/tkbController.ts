@@ -532,6 +532,20 @@ export const getLichDayCaNhanController = async (
         .map((dd) => dd.sinhVien.lop?.tenlop)
         .filter((lop, index, arr) => arr.indexOf(lop) === index), // Lấy danh sách lớp không trùng lặp
       soSinhVien: tkb.diemDanh.length,
+      danhSachSinhVien: tkb.diemDanh.map((dd) => ({
+        mssv: dd.sinhVien.mssv,
+        holot: dd.sinhVien.holot,
+        ten: dd.sinhVien.ten,
+        hoTen: `${dd.sinhVien.holot} ${dd.sinhVien.ten}`,
+        lop: dd.sinhVien.lop?.tenlop || "N/A",
+        email: dd.sinhVien.emailSV,
+        dienThoai: dd.sinhVien.dt_sv,
+        trangThaiDiemDanh: {
+          coMat: dd.coMat,
+          diTre: dd.diTre,
+          lyDoKhac: dd.lyDoKhac,
+        },
+      })),
     }));
     res.status(200).json({
       errorCode: 0,
