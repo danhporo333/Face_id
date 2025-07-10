@@ -540,6 +540,7 @@ export const getLichDayCaNhanController = async (
         lop: dd.sinhVien.lop?.tenlop || "N/A",
         email: dd.sinhVien.emailSV,
         dienThoai: dd.sinhVien.dt_sv,
+        faceID: dd.sinhVien.faceID,
         trangThaiDiemDanh: {
           coMat: dd.coMat,
           diTre: dd.diTre,
