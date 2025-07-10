@@ -1,10 +1,12 @@
 import { Request, Response } from "express";
+import { PrismaClient } from "@prisma/client";
 import {
   createTeacher,
   getAllTeachers,
   updateTeacher,
   deleteTeacher,
 } from "services/teacherService";
+const prisma = new PrismaClient();
 
 const VN_PHONE_PREFIXES = [
   "086",
@@ -183,6 +185,66 @@ export const deleteTeacherController = async (req: Request, res: Response) => {
         message: error.message,
       });
     }
+    res.status(500).json({
+      errorCode: 1,
+      message: "Internal server error",
+    });
+  }
+};
+
+export const updateAttendanceByTeacherController = async (req: Request, res: Response) => {
+  try {
+    const { mssv, tkbId, coMat, diTre, lyDoKhac } = req.body;
+    
+    if (!mssv || !tkbId) {
+       res.status(400).json({
+        errorCode: 1,
+        message: "MSSV và TKB ID là bắt buộc",
+      });
+      return;
+    }
+
+    // Kiểm tra bản ghi điểm danh có tồn tại không
+    const existingAttendance = await prisma.diemDanh.findUnique({
+      where: {
+        mssv_id: {
+          mssv: mssv,
+          id: tkbId,
+        },
+      },
+    });
+
+    if (!existingAttendance) {
+       res.status(404).json({
+        errorCode: 1,
+        message: "Bản ghi điểm danh không tồn tại",
+      });
+      return;
+    }
+
+    // Cập nhật trạng thái điểm danh
+    const updatedAttendance = await prisma.diemDanh.update({
+      where: {
+        mssv_id: {
+          mssv: mssv,
+          id: tkbId,
+        },
+      },
+      data: {
+        coMat: coMat,
+        diTre: diTre,
+        lyDoKhac: lyDoKhac || null,
+        // thoiGianCapNhat: new Date(),
+      },
+    });
+
+    res.status(200).json({
+      errorCode: 0,
+      message: "Cập nhật điểm danh thành công",
+      data: updatedAttendance,
+    });
+  } catch (error: any) {
+    console.error("Update attendance error:", error);
     res.status(500).json({
       errorCode: 1,
       message: "Internal server error",

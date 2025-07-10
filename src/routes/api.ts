@@ -41,6 +41,7 @@ import {
   getAllTeachersController,
   updateTeacherController,
   deleteTeacherController,
+  updateAttendanceByTeacherController,
 } from "controller/teacherController";
 import {
   createRoomController,
@@ -191,6 +192,9 @@ router.delete(
   checkRole(["ADMIN"]),
   deleteTeacherController
 );
+
+router.put("/teacher/update-attendance", auth, checkRole(["TEACHER"]), updateAttendanceByTeacherController);
+
 
 //api room
 router.post("/createroom", auth, checkRole(["ADMIN"]), createRoomController);
