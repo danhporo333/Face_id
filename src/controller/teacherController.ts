@@ -1,12 +1,13 @@
 import { Request, Response } from "express";
-import { PrismaClient } from "@prisma/client";
+import { prisma } from "config/client";
 import {
   createTeacher,
   getAllTeachers,
   updateTeacher,
   deleteTeacher,
 } from "services/teacherService";
-const prisma = new PrismaClient();
+
+
 
 const VN_PHONE_PREFIXES = [
   "086",
@@ -250,4 +251,36 @@ export const updateAttendanceByTeacherController = async (req: Request, res: Res
       message: "Internal server error",
     });
   }
+};
+
+export const openAttendanceController = async (req: Request, res: Response) => {
+  const { tkbId } = req.body;
+  if (!tkbId) {
+    res.status(400).json({ errorCode: 1, message: "tkbId là bắt buộc" });
+    return;
+  }
+  await prisma.tKB.update({
+    where: { id: tkbId },
+    data: { isOpenAttendance: true },
+  });
+  res.status(200).json({ errorCode: 0, message: "Mở điểm danh thành công" });
+};
+
+export const closeAttendanceController = async (req: Request, res: Response) => {
+  const { tkbId } = req.body;
+  if (!tkbId) {
+    res.status(400).json({ 
+      errorCode: 1, 
+      message: "tkbId là bắt buộc" 
+    });
+    return;
+  }
+  await prisma.tKB.update({
+    where: { id: tkbId },
+    data: { isOpenAttendance: false },
+  });
+  res.status(200).json({ 
+    errorCode: 0, 
+    message: "Đóng điểm danh thành công" 
+  });
 };

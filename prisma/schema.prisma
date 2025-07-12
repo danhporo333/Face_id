@@ -93,6 +93,7 @@ model TKB {
   monHoc  MonHoc  @relation(fields: [mamh], references: [mamh], onDelete: Cascade)
   giangVien GV   @relation(fields: [mgv], references: [mgv], onDelete: Cascade)
   phong   Phong  @relation(fields: [sop], references: [sop], onDelete: Cascade)
+  isOpenAttendance    Boolean    @default(false)
   diemDanh DiemDanh[]
 }
 

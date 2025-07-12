@@ -546,6 +546,7 @@ export const getLichDayCaNhanController = async (
           diTre: dd.diTre,
           lyDoKhac: dd.lyDoKhac,
         },
+        isOpenAttendance: tkb.isOpenAttendance // Trạng thái mở điểm danh
       })),
     }));
     res.status(200).json({
