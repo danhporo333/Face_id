@@ -22,6 +22,7 @@ import {
   getAllClassController,
   updateClassController,
   deleteClassController,
+  importClassesFromExcelController,
 } from "controller/classController";
 import {
   createStudentController,
@@ -29,12 +30,14 @@ import {
   updateStudentController,
   deleteStudentController,
   getStudentByMSSV,
+  importStudentsController,
 } from "controller/studentController";
 import {
   createMonHocController,
   getAllMonHocController,
   updateMonHocController,
   deleteMonHocController,
+  importSubjectsFromExcelController,
 } from "controller/monhocController";
 import {
   createTeacherController,
@@ -44,6 +47,7 @@ import {
   updateAttendanceByTeacherController,
   openAttendanceController,
   closeAttendanceController,
+  importTeachersFromExcelController,
 } from "controller/teacherController";
 import {
   createRoomController,
@@ -120,6 +124,12 @@ router.delete(
   checkRole(["ADMIN"]),
   deleteClassController
 );
+router.post(
+  "/import-classes",
+  auth,
+  checkRole(["ADMIN"]),
+  importClassesFromExcelController
+);
 
 //api student
 router.post(
@@ -153,6 +163,13 @@ router.get(
   getStudentByMSSV
 );
 
+router.post(
+  "/import-students",
+  auth,
+  checkRole(["ADMIN"]),
+  importStudentsController
+);
+
 //api mon hoc
 router.post(
   "/createmonhoc",
@@ -167,6 +184,12 @@ router.delete(
   auth,
   checkRole(["ADMIN"]),
   deleteMonHocController
+);
+router.post(
+  "/import-subjects",
+  auth,
+  checkRole(["ADMIN"]),
+  importSubjectsFromExcelController
 );
 
 //api teacher
@@ -194,10 +217,30 @@ router.delete(
   checkRole(["ADMIN"]),
   deleteTeacherController
 );
-router.put("/teacher/update-attendance", auth, checkRole(["TEACHER"]), updateAttendanceByTeacherController);
-router.post("/teacher/open-attendance", auth, checkRole(["TEACHER"]), openAttendanceController);
-router.post("/teacher/close-attendance", auth, checkRole(["TEACHER"]), closeAttendanceController);
-
+router.put(
+  "/teacher/update-attendance",
+  auth,
+  checkRole(["TEACHER"]),
+  updateAttendanceByTeacherController
+);
+router.post(
+  "/teacher/open-attendance",
+  auth,
+  checkRole(["TEACHER"]),
+  openAttendanceController
+);
+router.post(
+  "/teacher/close-attendance",
+  auth,
+  checkRole(["TEACHER"]),
+  closeAttendanceController
+);
+router.post(
+  "/import-teachers",
+  auth,
+  checkRole(["ADMIN"]),
+  importTeachersFromExcelController
+);
 
 //api room
 router.post("/createroom", auth, checkRole(["ADMIN"]), createRoomController);

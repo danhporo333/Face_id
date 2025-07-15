@@ -5,9 +5,9 @@ import {
   getAllTeachers,
   updateTeacher,
   deleteTeacher,
+  importTeachersFromExcel,
 } from "services/teacherService";
-
-
+import { excelUploadMiddleware } from "src/Middleware/multer";
 
 const VN_PHONE_PREFIXES = [
   "086",
@@ -193,12 +193,15 @@ export const deleteTeacherController = async (req: Request, res: Response) => {
   }
 };
 
-export const updateAttendanceByTeacherController = async (req: Request, res: Response) => {
+export const updateAttendanceByTeacherController = async (
+  req: Request,
+  res: Response
+) => {
   try {
     const { mssv, tkbId, coMat, diTre, lyDoKhac } = req.body;
-    
+
     if (!mssv || !tkbId) {
-       res.status(400).json({
+      res.status(400).json({
         errorCode: 1,
         message: "MSSV và TKB ID là bắt buộc",
       });
@@ -216,7 +219,7 @@ export const updateAttendanceByTeacherController = async (req: Request, res: Res
     });
 
     if (!existingAttendance) {
-       res.status(404).json({
+      res.status(404).json({
         errorCode: 1,
         message: "Bản ghi điểm danh không tồn tại",
       });
@@ -266,12 +269,15 @@ export const openAttendanceController = async (req: Request, res: Response) => {
   res.status(200).json({ errorCode: 0, message: "Mở điểm danh thành công" });
 };
 
-export const closeAttendanceController = async (req: Request, res: Response) => {
+export const closeAttendanceController = async (
+  req: Request,
+  res: Response
+) => {
   const { tkbId } = req.body;
   if (!tkbId) {
-    res.status(400).json({ 
-      errorCode: 1, 
-      message: "tkbId là bắt buộc" 
+    res.status(400).json({
+      errorCode: 1,
+      message: "tkbId là bắt buộc",
     });
     return;
   }
@@ -279,8 +285,54 @@ export const closeAttendanceController = async (req: Request, res: Response) => 
     where: { id: tkbId },
     data: { isOpenAttendance: false },
   });
-  res.status(200).json({ 
-    errorCode: 0, 
-    message: "Đóng điểm danh thành công" 
+  res.status(200).json({
+    errorCode: 0,
+    message: "Đóng điểm danh thành công",
+  });
+};
+
+export const importTeachersFromExcelController = async (
+  req: Request,
+  res: Response
+) => {
+  // Sử dụng middleware excel
+  const upload = excelUploadMiddleware("excel");
+
+  upload(req, res, async (err: any) => {
+    try {
+      if (err) {
+        return res.status(400).json({
+          errorCode: 1,
+          message: err.message,
+        });
+      }
+
+      if (!req.file) {
+        return res.status(400).json({
+          errorCode: 1,
+          message: "Vui lòng chọn file Excel",
+        });
+      }
+
+      const result = await importTeachersFromExcel(req.file);
+
+      return res.status(200).json({
+        errorCode: result.failed > 0 ? 1 : 0,
+        message:
+          `Import thành công ${result.imported} giảng viên` +
+          (result.failed > 0 ? `, ${result.failed} bản ghi lỗi` : ""),
+        data: {
+          imported: result.imported,
+          failed: result.failed,
+          results: result.results,
+          errors: result.errors,
+        },
+      });
+    } catch (error: any) {
+      return res.status(500).json({
+        errorCode: 1,
+        message: error.message,
+      });
+    }
   });
 };

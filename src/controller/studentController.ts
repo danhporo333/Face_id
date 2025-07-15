@@ -4,10 +4,11 @@ import {
   getAllStudents,
   updateStudent,
   deleteStudent,
+  importStudentsFromExcel,
 } from "services/studentService";
-import { uploadSingleFile } from "services/fileService";
 import { fileUploadMiddleware } from "../Middleware/multer";
 import { prisma } from "config/client";
+import { excelUploadMiddleware } from "../Middleware/multer";
 
 interface IStudent {
   malop: string;
@@ -219,7 +220,6 @@ export const updateStudentController = async (req: Request, res: Response) => {
     try {
       const { mssv, malop, holot, ten, ntns, phai, dt_sv, emailSV, image } =
         req.body;
-      console.log("Received data:", req.body);
       if (!mssv) {
         return res.status(400).json({
           errorCode: 1,
@@ -351,4 +351,46 @@ export const getStudentByMSSV = async (req: Request, res: Response) => {
   } catch (error) {
     res.status(500).json({ message: "Internal server error" });
   }
+};
+
+export const importStudentsController = async (req: Request, res: Response) => {
+  const upload = excelUploadMiddleware("excel");
+
+  upload(req, res, async (err: any) => {
+    try {
+      if (err) {
+        return res.status(400).json({
+          errorCode: 1,
+          message: err.message,
+        });
+      }
+
+      if (!req.file) {
+        return res.status(400).json({
+          errorCode: 1,
+          message: "Vui lòng chọn file Excel",
+        });
+      }
+
+      const result = await importStudentsFromExcel(req.file);
+
+      return res.status(200).json({
+        errorCode: result.failed > 0 ? 1 : 0,
+        message:
+          `Import thành công ${result.imported} sinh viên` +
+          (result.failed > 0 ? `, ${result.failed} bản ghi lỗi` : ""),
+        data: {
+          imported: result.imported,
+          failed: result.failed,
+          results: result.results,
+          errors: result.errors,
+        },
+      });
+    } catch (error: any) {
+      return res.status(500).json({
+        errorCode: 1,
+        message: error.message,
+      });
+    }
+  });
 };

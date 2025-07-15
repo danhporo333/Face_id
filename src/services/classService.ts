@@ -70,72 +70,149 @@ export const deleteClass = async (malop: string) => {
   return deletedClass;
 };
 
-// export const importClassesFromExcel = async (file: Express.Multer.File) => {
-//   // Map tên cột excel về tên field DB (không phân biệt hoa thường, có dấu hoặc không dấu)
-//   const columnMapping = {
-//     tenlop: "tenlop",
-//     "tên lớp": "tenlop",
-//     "ten lop": "tenlop",
-//     siso: "siso",
-//     "sĩ số": "siso",
-//     "si so": "siso",
-//     makv: "makv",
-//     "mã khoa viện": "makv",
-//     "ma khoa vien": "makv",
-//     "ma kv": "makv",
-//   };
+export const importClassesFromExcel = async (file: Express.Multer.File) => {
+  // Map tên cột excel về tên field DB (không phân biệt hoa thường, có dấu hoặc không dấu)
+  const columnMapping = {
+    tenlop: "tenlop",
+    "tên lớp": "tenlop",
+    "ten lop": "tenlop",
+    "Tên lớp": "tenlop",
+    "Tên Lớp": "tenlop",
+    "TÊN LỚP": "tenlop",
+    lớp: "tenlop",
+    Lớp: "tenlop",
+    LỚP: "tenlop",
+    class: "tenlop",
+    Class: "tenlop",
 
-//   try {
-//     const data = parseExcelFile<ILop>(file.path, columnMapping);
+    siso: "siso",
+    "sĩ số": "siso",
+    "si so": "siso",
+    "SI SO": "siso",
+    "Sĩ số": "siso",
+    "Sĩ Số": "siso",
+    "SĨ SỐ": "siso",
+    "số lượng": "siso",
+    "Số lượng": "siso",
+    "SỐ LƯỢNG": "siso",
 
-//     if (!Array.isArray(data) || data.length === 0) {
-//       throw new Error("File Excel không có dữ liệu hoặc sai định dạng");
-//     }
+    // Map cho tên khoa viện (thay vì mã khoa viện)
+    tenkhoa: "tenkhoa",
+    "tên khoa": "tenkhoa",
+    "Tên khoa": "tenkhoa",
+    "TÊN KHOA": "tenkhoa",
+    "tên khoa viện": "tenkhoa",
+    "Tên khoa viện": "tenkhoa",
+    "TÊN KHOA VIỆN": "tenkhoa",
+    "ten khoa vien": "tenkhoa",
+    "Ten khoa vien": "tenkhoa",
+    khoavien: "tenkhoa",
+    "khoa viện": "tenkhoa",
+    "Khoa viện": "tenkhoa",
+    "KHOA VIỆN": "tenkhoa",
 
-//     const results = [];
-//     const errors = [];
+    // Giữ lại mapping cũ để tương thích
+    makv: "makv",
+    "mã khoa viện": "makv",
+    "ma khoa vien": "makv",
+    "ma kv": "makv",
+    "Mã khoa viện": "makv",
+    "Mã Khoa Viện": "makv",
+    "MÃ KHOA VIỆN": "makv",
+    "Mã KV": "makv",
+  };
 
-//     for (const [index, row] of data.entries()) {
-//       try {
-//         // Validate required fields
-//         if (!row.tenlop) throw new Error("Tên lớp không được để trống");
-//         if (!row.siso) throw new Error("Sĩ số không được để trống");
-//         if (!row.makv) throw new Error("Mã khoa viện không được để trống");
+  try {
+    const data = parseExcelFile<any>(file.path, columnMapping);
 
-//         // Kiểm tra khoa viện tồn tại
-//         const khoaVien = await prisma.khoaVien.findUnique({
-//           where: { makv: row.makv },
-//         });
-//         if (!khoaVien) throw new Error("Khoa viện không tồn tại");
+    if (!Array.isArray(data) || data.length === 0) {
+      throw new Error("Không có dữ liệu hợp lệ trong file Excel");
+    }
 
-//         // Kiểm tra lớp đã tồn tại chưa
-//         const existingClass = await prisma.lop.findFirst({
-//           where: { tenlop: row.tenlop },
-//         });
-//         if (existingClass) throw new Error("Lớp đã tồn tại");
+    // 🔥 OPTIMIZE: Lấy tất cả khoa viện 1 lần thay vì query trong loop
+    const allKhoaVien = await prisma.khoaVien.findMany({
+      select: { makv: true, tenkv: true },
+    });
 
-//         // Tạo mới lớp
-//         const created = await prisma.lop.create({
-//           data: {
-//             tenlop: row.tenlop,
-//             siso: +row.siso,
-//             makv: row.makv,
-//           },
-//         });
-//         results.push(created);
-//       } catch (error: any) {
-//         errors.push({ row: index + 2, error: error.message });
-//       }
-//     }
+    // Tạo Map để lookup nhanh
+    const khoaVienMap = new Map();
+    allKhoaVien.forEach((kv) => {
+      khoaVienMap.set(kv.tenkv.toLowerCase(), kv);
+    });
 
-//     // Xóa file sau khi import xong nếu muốn
-//     fs.unlinkSync(file.path);
+    const results = [];
+    const errors = [];
 
-//     return { imported: results.length, failed: errors.length, results, errors };
-//   } catch (error: any) {
-//     try {
-//       fs.unlinkSync(file.path);
-//     } catch {}
-//     throw new Error(`Lỗi import: ${error.message}`);
-//   }
-// };
+    for (const [index, row] of data.entries()) {
+      try {
+        // Validate required fields
+        if (!row.tenlop) throw new Error("Tên lớp không được để trống");
+        if (!row.siso) throw new Error("Sĩ số không được để trống");
+        if (!row.tenkhoa && !row.makv) {
+          throw new Error(
+            "Tên khoa viện hoặc mã khoa viện không được để trống"
+          );
+        }
+
+        // Tìm khoa viện từ Map thay vì query DB
+        let khoaVien;
+        if (row.tenkhoa) {
+          const cleanTenKhoa = row.tenkhoa.toString().trim();
+          khoaVien = khoaVienMap.get(cleanTenKhoa.toLowerCase());
+
+          if (!khoaVien) {
+            throw new Error(
+              `Không tìm thấy khoa viện với tên: ${cleanTenKhoa}`
+            );
+          }
+        } else if (row.makv) {
+          const cleanMakv = row.makv.toString().trim();
+          khoaVien = allKhoaVien.find((kv) => kv.makv === cleanMakv);
+
+          if (!khoaVien) {
+            throw new Error(`Không tìm thấy khoa viện với mã: ${cleanMakv}`);
+          }
+        }
+
+        // Validate sĩ số
+        const sisoNumber = parseInt(row.siso);
+        if (isNaN(sisoNumber) || sisoNumber <= 0) {
+          throw new Error("Sĩ số phải là số dương");
+        }
+
+        // Kiểm tra lớp đã tồn tại chưa
+        const existingClass = await prisma.lop.findFirst({
+          where: { tenlop: row.tenlop.toString().trim() },
+        });
+        if (existingClass) {
+          throw new Error(`Lớp ${row.tenlop} đã tồn tại`);
+        }
+
+        // Tạo mới lớp
+        const created = await prisma.lop.create({
+          data: {
+            tenlop: row.tenlop.toString().trim(),
+            siso: sisoNumber,
+            makv: khoaVien.makv,
+          },
+          include: {
+            khoaVien: true,
+          },
+        });
+
+        results.push(created);
+      } catch (error: any) {
+        errors.push({ row: index + 2, error: error.message });
+      }
+    }
+
+    // Xóa file sau khi import xong
+    fs.unlinkSync(file.path);
+    return { imported: results.length, failed: errors.length, results, errors };
+  } catch (error: any) {
+    try {
+      fs.unlinkSync(file.path);
+    } catch {}
+    throw new Error(`Lỗi import: ${error.message}`);
+  }
+};

@@ -4,7 +4,9 @@ import {
   getAllClass,
   updateClass,
   deleteClass,
+  importClassesFromExcel,
 } from "services/classService";
+import { excelUploadMiddleware } from "../Middleware/multer";
 
 export const createClassController = async (req: Request, res: Response) => {
   try {
@@ -122,4 +124,50 @@ export const deleteClassController = async (req: Request, res: Response) => {
     console.error(error);
     res.status(500).json({ message: "Internal server error" });
   }
+};
+
+export const importClassesFromExcelController = async (
+  req: Request,
+  res: Response
+) => {
+  // Sử dụng middleware excel
+  const upload = excelUploadMiddleware("excel");
+
+  upload(req, res, async (err: any) => {
+    try {
+      if (err) {
+        return res.status(400).json({
+          errorCode: 1,
+          message: err.message,
+        });
+      }
+
+      if (!req.file) {
+        return res.status(400).json({
+          errorCode: 1,
+          message: "Vui lòng chọn file Excel",
+        });
+      }
+
+      const result = await importClassesFromExcel(req.file);
+
+      return res.status(200).json({
+        errorCode: result.failed > 0 ? 1 : 0,
+        message:
+          `Import thành công ${result.imported} lớp` +
+          (result.failed > 0 ? `, ${result.failed} bản ghi lỗi` : ""),
+        data: {
+          imported: result.imported,
+          failed: result.failed,
+          results: result.results,
+          errors: result.errors,
+        },
+      });
+    } catch (error: any) {
+      return res.status(500).json({
+        errorCode: 1,
+        message: error.message,
+      });
+    }
+  });
 };
