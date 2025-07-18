@@ -4,6 +4,7 @@ import path from "path";
 import cors from "cors";
 import passport from "./config/passport";
 import apiRoutes from "./routes/api";
+import testRoutes from "./routes/testRoutes";
 // import fileUpload from "express-fileupload";
 const app = express();
 const port = process.env.PORT || 8080;
@@ -37,6 +38,11 @@ app.use(express.urlencoded({ extended: true })); // for form data
 app.use(passport.initialize());
 //khai báo routes
 app.use("/v1/api/", apiRoutes);
+
+// Test routes (chỉ dùng khi development)
+if (process.env.NODE_ENV !== "production") {
+  app.use("/api/test", testRoutes);
+}
 
 app.listen(port, () => {
   console.log(`Server started on port: ${port}`);

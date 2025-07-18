@@ -8,6 +8,7 @@ import {
   importTeachersFromExcel,
 } from "services/teacherService";
 import { excelUploadMiddleware } from "src/Middleware/multer";
+import { attendanceReportService } from "services/AttendanceReportService";
 
 const VN_PHONE_PREFIXES = [
   "086",
@@ -281,14 +282,28 @@ export const closeAttendanceController = async (
     });
     return;
   }
-  await prisma.tKB.update({
-    where: { id: tkbId },
-    data: { isOpenAttendance: false },
-  });
-  res.status(200).json({
-    errorCode: 0,
-    message: "Đóng điểm danh thành công",
-  });
+
+  try {
+    // Đóng điểm danh
+    await prisma.tKB.update({
+      where: { id: tkbId },
+      data: { isOpenAttendance: false },
+    });
+
+    // Gửi báo cáo email cho admin
+    await attendanceReportService.generateReportForTKB(tkbId);
+
+    res.status(200).json({
+      errorCode: 0,
+      message: "Đóng điểm danh thành công. Báo cáo đã được gửi tới admin.",
+    });
+  } catch (error: any) {
+    console.error("Error closing attendance:", error);
+    res.status(200).json({
+      errorCode: 0,
+      message: "Đóng điểm danh thành công nhưng không thể gửi báo cáo email",
+    });
+  }
 };
 
 export const importTeachersFromExcelController = async (

@@ -155,17 +155,31 @@ export const importStudentsFromExcel = async (file: Express.Multer.File) => {
     "TÊN LỚP": "tenlop",
     "ten lop": "tenlop",
     "Ten lop": "tenlop",
+    "TEN LOP": "tenlop",
     lớp: "tenlop",
     Lớp: "tenlop",
     LỚP: "tenlop",
+    lop: "tenlop",
+    Lop: "tenlop",
+    LOP: "tenlop",
     class: "tenlop",
     Class: "tenlop",
+    CLASS: "tenlop",
+    "Tên Lớp": "tenlop",
+    "tên Lớp": "tenlop",
 
     // Giữ lại mapping cũ để tương thích
     malop: "malop",
     "mã lớp": "malop",
     "Mã lớp": "malop",
-    "MA LỚP": "malop",
+    "MÃ LỚP": "malop",
+    "ma lop": "malop",
+    "Ma lop": "malop",
+    "MA LOP": "malop",
+    "Mã Lớp": "malop",
+    "mã Lớp": "malop",
+    "class code": "malop",
+    "Class Code": "malop",
 
     // Các field khác
     holot: "holot",
@@ -287,7 +301,7 @@ export const importStudentsFromExcel = async (file: Express.Multer.File) => {
             phai: row.phai,
             dt_sv: phoneNumber,
             emailSV: row.emailSV,
-            faceID: row.faceID,
+            // faceID: row.faceID,
           },
         });
 
