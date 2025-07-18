@@ -242,6 +242,13 @@ router.post(
   importTeachersFromExcelController
 );
 
+router.get(
+  "/lich-day-ca-nhan",
+  auth,
+  checkRole(["TEACHER"]),
+  getLichDayCaNhanController
+);
+
 //api room
 router.post("/createroom", auth, checkRole(["ADMIN"]), createRoomController);
 router.get("/allrooms", auth, checkRole(["ADMIN"]), getAllRoomsController);
@@ -286,12 +293,6 @@ router.get(
 );
 
 // cho giáo viên
-router.get(
-  "/lich-day-ca-nhan",
-  auth,
-  checkRole(["TEACHER"]),
-  getLichDayCaNhanController
-);
 
 //api diem danh
 router.post("/diemdanh/faceid", diemDanhFaceID);

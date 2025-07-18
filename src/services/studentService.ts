@@ -304,7 +304,6 @@ export const importStudentsFromExcel = async (file: Express.Multer.File) => {
             // faceID: row.faceID,
           },
         });
-
         // Format ngày sinh trước khi trả về kết quả
         const formattedDate = {
           ...created,
