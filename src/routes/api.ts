@@ -10,7 +10,7 @@ import {
     updateUserController,
 } from 'controller/userController';
 
-import { uploadFile } from 'controller/fileController';
+import { uploadFile, uploadMultipleFiles } from 'controller/fileController';
 import {
     createKhoaVienController,
     getAllKhoaVienController,
@@ -83,6 +83,7 @@ router.delete('/deleteuser/:id', auth, checkRole(['ADMIN']), deleteUserControlle
 
 //api upload file
 router.post('/upload', uploadFile);
+router.post('/upload-multiple', uploadMultipleFiles);
 
 //api khoa vien
 router.post('/createkhoa_vien', auth, checkRole(['ADMIN']), createKhoaVienController);
