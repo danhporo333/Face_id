@@ -1,0 +1,184 @@
+import React from "react";
+import { Link, useLocation, useNavigate } from "react-router-dom";
+import {
+  HomeOutlined,
+  ApartmentOutlined,
+  TeamOutlined,
+  BookOutlined,
+  UserOutlined,
+  LoginOutlined,
+  AliwangwangOutlined,
+  MenuFoldOutlined,
+  MenuUnfoldOutlined,
+  BankOutlined,
+} from "@ant-design/icons";
+import { Button, Menu } from "antd";
+import "./Navigattion.css";
+import { useContext } from "react";
+import { AuthContext } from "../context/auth.context.jsx";
+
+const pathToKey = (pathname) => {
+  if (pathname === "/") return "home";
+  if (pathname.startsWith("/timetableAdminPage")) return "timetableAdminPage";
+  if (pathname.startsWith("/khoavien")) return "khoavien";
+  if (pathname.startsWith("/class")) return "class";
+  if (pathname.startsWith("/student")) return "student";
+  if (pathname.startsWith("/subject")) return "subject";
+  if (pathname.startsWith("/teacher")) return "teacher";
+  if (pathname.startsWith("/timetable")) return "timetable";
+  if (pathname.startsWith("/room")) return "room";
+  if (pathname.startsWith("/Lichday")) return "lichday";
+  if (pathname.startsWith("/register")) return "register";
+  return "";
+};
+
+const Navigation = ({ collapsed, setCollapsed }) => {
+  const { user, setUser } = useContext(AuthContext);
+  const navigate = useNavigate();
+  const toggleCollapsed = () => setCollapsed(!collapsed);
+  const location = useLocation();
+  const selectedKey = pathToKey(location.pathname);
+
+  const handleLogout = () => {
+    setUser({
+      id: "",
+      username: "",
+      role: "",
+    });
+    localStorage.removeItem("token");
+    localStorage.removeItem("mssv");
+    navigate("/login");
+  };
+
+  // Kiểm tra quyền truy cập của người dùng
+  const isAdmin = user?.role?.includes("ADMIN");
+  const isTeacher = user?.role?.includes("TEACHER");
+  const isStudent = user?.role?.includes("STUDENT");
+
+  const items = [
+    {
+      key: "home",
+      icon: <HomeOutlined />,
+      label: <Link to={"/"}>Trang Chủ</Link>,
+    },
+    ...(isAdmin
+      ? [
+          {
+            key: "khoavien",
+            icon: <ApartmentOutlined />,
+            label: <Link to={"/khoavien"}>Quản lý khoa viện</Link>,
+          },
+          {
+            key: "class",
+            icon: <TeamOutlined />,
+            label: <Link to={"/class"}>Quản lý lớp học</Link>,
+          },
+          {
+            key: "student",
+            icon: <UserOutlined />,
+            label: <Link to={"/student"}>Quản lý sinh viên</Link>,
+          },
+          {
+            key: "subject",
+            icon: <BookOutlined />,
+            label: <Link to={"/subject"}>Quản lý môn học</Link>,
+          },
+          {
+            key: "teacher",
+            icon: <TeamOutlined />,
+            label: <Link to={"/teacher"}>Quản lý giảng viên</Link>,
+          },          
+          {
+            key: "room",
+            icon: <BankOutlined />,
+            label: <Link to={"/room"}>Quản lý phòng học</Link>,
+          },
+          {
+            key: "timetableAdminPage",
+            icon: <BankOutlined />,
+            label: <Link to={"/timetableAdminPage"}>Quản lý thời khóa biểu</Link>,
+          },
+          {
+            key: "register",
+            icon: <UserOutlined />,
+            label: <Link to={"/register"}>Đăng ký tài khoản SV_GV</Link>,
+          },
+          {
+            label: `welcome ${user.username}`,
+            icon: <AliwangwangOutlined />,
+            children: [
+              {
+                label: "Đăng xuất",
+                key: "logout",
+                icon: <LoginOutlined />,
+                onClick: handleLogout,
+              },
+            ],
+          },
+        ]
+      : []),
+    ...(isStudent
+      ? [
+          {
+            key: "timetable",
+            icon: <ApartmentOutlined />,
+            label: <Link to={"/timetable"}>Thời khóa biểu</Link>,
+          },
+          {
+            label: `${user.holot} ${user.ten}`,
+            icon: <AliwangwangOutlined />,
+            children: [
+              {
+                label: "Đăng xuất",
+                key: "logout",
+                icon: <LoginOutlined />,
+                onClick: handleLogout,
+              },
+            ],
+          },
+        ]
+      : []),
+    ...(isTeacher
+      ? [
+          {
+            key: "lichday",
+            icon: <ApartmentOutlined />,
+            label: <Link to={"/Lichday"}>Lịch giảng dạy</Link>,
+          },
+          {
+            label: `${user.hoGV} ${user.tenGV}`,
+            icon: <AliwangwangOutlined />,
+            children: [
+              {
+                label: "Đăng xuất",
+                key: "logout",
+                icon: <LoginOutlined />,
+                onClick: handleLogout,
+              },
+            ],
+          },
+        ]
+      : []),
+  ];
+
+  return (
+    <div className={`navigation-container${collapsed ? " collapsed" : ""}`}>
+      <Button
+        type="text"
+        onClick={toggleCollapsed}
+        className="navigation-toggle-btn"
+        icon={collapsed ? <MenuUnfoldOutlined /> : <MenuFoldOutlined />}
+      />
+      <Menu
+        mode="vertical"
+        theme="dark"
+        inlineCollapsed={collapsed}
+        items={items}
+        selectedKeys={[selectedKey]}
+        className="navigation-menu"
+      />
+    </div>
+  );
+};
+
+export default Navigation;
